@@ -1,0 +1,7 @@
+.env
+venv/
+__pycache__/
+*.pyc
+media/
+config/staticfiles/
+config/ffmpeg-2026-06-29-git-de6bcf5c05-full_build/

@@ -1,0 +1,778 @@
+{% extends "complaints/base.html" %}
+
+{% block title %}My Complaints{% endblock %}
+
+{% block content %}
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+<!-- Google Fonts (Plus Jakarta Sans) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    /* Premium Dashboard Styles overrides */
+    /* Fix base.html navbar link colors when Bootstrap is loaded */
+
+    a{
+        color:slategray;
+        text-decoration: none;
+    }
+    nav a {
+        /* color: #ffffff !important; */
+        text-decoration: none !important;
+        /* transition: opacity 0.2s ease; */
+    }
+    nav a:hover {
+        /* opacity: 0.85 !important; */
+    }
+
+    .dashboard-wrapper {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        color: #0f172a;
+        background-color: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .dashboard-container {
+        max-width: 1280px;
+        margin: 0 auto;
+    }
+
+    /* Header styling */
+    .gradient-heading {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+    }
+
+    .btn-new-complaint {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: #ffffff !important;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-new-complaint:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+
+    /* Stat Cards styling */
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: transparent;
+        transition: background 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.04) !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    .stat-card.total-card:hover::after { background: #4f46e5; }
+    .stat-card.processing-card:hover::after { background: #d97706; }
+    .stat-card.completed-card:hover::after { background: #059669; }
+    .stat-card.failed-card:hover::after { background: #dc2626; }
+    .stat-card.invalid-card:hover::after { background: #b91c1c; }
+
+    .bg-indigo-light { background-color: rgba(79, 70, 229, 0.08); }
+    .text-indigo { color: #4f46e5; }
+    
+    .bg-amber-light { background-color: rgba(245, 158, 11, 0.08); }
+    .text-amber { color: #d97706; }
+    
+    .bg-emerald-light { background-color: rgba(16, 185, 129, 0.08); }
+    .text-emerald { color: #059669; }
+    
+    .bg-rose-light { background-color: rgba(244, 63, 94, 0.08); }
+    .text-rose { color: #dc2626; }
+
+    .bg-valid-badge { background-color: #d1fae5; color: #047857; font-weight: 600; font-size: 0.725rem; }
+    .bg-invalid-badge { background-color: #fee2e2; color: #b91c1c; font-weight: 600; font-size: 0.725rem; }
+
+    .spinner-border-custom {
+        display: inline-block;
+        animation: spin-custom 3s linear infinite;
+    }
+
+    @keyframes spin-custom {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Search & Filter Toolbar */
+    .search-input-wrapper {
+        position: relative;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        pointer-events: none;
+    }
+
+    .search-input {
+        border: 1px solid #e2e8f0;
+        background-color: #ffffff;
+        padding-left: 2.75rem;
+        padding-right: 1.25rem;
+        height: 48px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+
+    .filter-btn {
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        color: #475569;
+        padding: 0.5rem 1.25rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        outline: none;
+    }
+
+    .filter-btn:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #0f172a;
+    }
+
+    .filter-btn.active {
+        background: #0f172a;
+        color: #ffffff;
+        border-color: #0f172a;
+        box-shadow: 0 4px 6px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Complaint Cards Grid */
+    .complaint-card {
+        border: 1px solid #e2e8f0 !important;
+        background: #ffffff;
+        border-radius: 16px !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .complaint-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08), 0 8px 16px -8px rgba(0, 0, 0, 0.08) !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    .hover-indicator {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: #2563eb;
+        transform: scaleY(0);
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border-top-left-radius: 16px;
+        border-bottom-left-radius: 16px;
+    }
+
+    .complaint-card:hover .hover-indicator {
+        transform: scaleY(1);
+    }
+
+    .image-wrapper {
+        width: 120px;
+        height: 120px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .complaint-thumbnail {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .complaint-card:hover .complaint-thumbnail {
+        transform: scale(1.08);
+    }
+
+    .placeholder-icon-container {
+        font-size: 2.25rem;
+        color: #94a3b8;
+    }
+
+    /* Badges */
+    .category-badge {
+        background-color: #f1f5f9;
+        color: #475569;
+        font-size: 0.725rem;
+        font-weight: 700;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        letter-spacing: 0.025em;
+    }
+
+    .bg-status-processing { background-color: #fef3c7; color: #b45309; font-weight: 600; font-size: 0.75rem; }
+    .bg-status-completed { background-color: #d1fae5; color: #047857; font-weight: 600; font-size: 0.75rem; }
+    .bg-status-failed { background-color: #fee2e2; color: #b91c1c; font-weight: 600; font-size: 0.75rem; }
+
+    .bg-sev-critical { background-color: #fee2e2; color: #991b1b; font-weight: 600; }
+    .bg-sev-high { background-color: #ffedd5; color: #c2410c; font-weight: 600; }
+    .bg-sev-medium { background-color: #dbeafe; color: #1d4ed8; font-weight: 600; }
+    .bg-sev-low { background-color: #f1f5f9; color: #1e293b; font-weight: 600; }
+
+    /* Metadata design */
+    .meta-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #94a3b8;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .meta-value {
+        font-size: 0.85rem;
+        color: #334155;
+        font-weight: 500;
+    }
+
+    .details-arrow {
+        transition: transform 0.2s ease;
+    }
+
+    .complaint-card:hover .details-arrow {
+        transform: translateX(4px);
+    }
+
+    /* Empty state */
+    .empty-state-card {
+        border: 1px dashed #cbd5e1 !important;
+        background: #ffffff;
+        border-radius: 20px !important;
+    }
+
+    .illustration-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        color: #64748b;
+        font-size: 2.5rem;
+    }
+
+    .complaint-card-wrapper {
+        transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+</style>
+
+<div class="my-complaints-page">
+    
+    <div class="dashboard-wrapper py-5">
+        <div class="container dashboard-container px-4">
+            
+            <!-- Header -->
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-5">
+                <div>
+                    <h1 class="gradient-heading mb-1 display-6">My Complaints</h1>
+                    <p class="text-muted mb-0" style="font-size: 1.05rem;">
+                        Track, manage, and monitor the progress of your submitted constituency complaints.
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'complaints:create_complaint' %}" class="btn btn-new-complaint d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>New Complaint</span>
+                    </a>
+                </div>
+            </div>
+
+            {% if complaints %}
+            
+            <!-- Statistics Section -->
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4 mb-5">
+                <!-- Total Complaints Card -->
+                <div class="col">
+                    <div class="card stat-card total-card h-100 p-3">
+                        <div class="card-body d-flex align-items-center p-2">
+                            <div class="stat-icon bg-indigo-light text-indigo rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; border-radius: 12px !important;">
+                                <i class="bi bi-folder2-open fs-4"></i>
+                            </div>
+                            <div>
+                                <span class="text-muted small fw-semibold d-block mb-0 text-uppercase tracking-wider" style="font-size: 0.725rem;">Total Complaints</span>
+                                <h3 class="fw-bold mb-0 mt-1" id="stat-total">{{ total }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Processing Card -->
+                <div class="col">
+                    <div class="card stat-card processing-card h-100 p-3">
+                        <div class="card-body d-flex align-items-center p-2">
+                            <div class="stat-icon bg-amber-light text-amber rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; border-radius: 12px !important;">
+                                <i class="bi bi-hourglass-split fs-4 spinner-border-custom"></i>
+                            </div>
+                            <div>
+                                <span class="text-muted small fw-semibold d-block mb-0 text-uppercase tracking-wider" style="font-size: 0.725rem;">Processing</span>
+                                <h3 class="fw-bold mb-0 mt-1" id="stat-processing">{{ processing }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Completed Card -->
+                <div class="col">
+                    <div class="card stat-card completed-card h-100 p-3">
+                        <div class="card-body d-flex align-items-center p-2">
+                            <div class="stat-icon bg-emerald-light text-emerald rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; border-radius: 12px !important;">
+                                <i class="bi bi-check-circle-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <span class="text-muted small fw-semibold d-block mb-0 text-uppercase tracking-wider" style="font-size: 0.725rem;">Completed</span>
+                                <h3 class="fw-bold mb-0 mt-1" id="stat-completed">{{ completed }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Failed Card -->
+                <div class="col">
+                    <div class="card stat-card failed-card h-100 p-3">
+                        <div class="card-body d-flex align-items-center p-2">
+                            <div class="stat-icon bg-rose-light text-rose rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; border-radius: 12px !important;">
+                                <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <span class="text-muted small fw-semibold d-block mb-0 text-uppercase tracking-wider" style="font-size: 0.725rem;">Failed</span>
+                                <h3 class="fw-bold mb-0 mt-1" id="stat-failed">{{ failed }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Invalid Card -->
+                <div class="col">
+                    <div class="card stat-card invalid-card h-100 p-3">
+                        <div class="card-body d-flex align-items-center p-2">
+                            <div class="stat-icon bg-rose-light text-rose rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; border-radius: 12px !important; background-color: rgba(220, 38, 38, 0.08); color: #b91c1c;">
+                                <i class="bi bi-x-octagon fs-4"></i>
+                            </div>
+                            <div>
+                                <span class="text-muted small fw-semibold d-block mb-0 text-uppercase tracking-wider" style="font-size: 0.725rem;">Invalid</span>
+                                <h3 class="fw-bold mb-0 mt-1" id="stat-invalid">{{ invalid }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search & Filter Toolbar -->
+            <div class="row align-items-center g-3 mb-4">
+                <div class="col-md-5 col-lg-4">
+                    <div class="search-input-wrapper">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" id="searchInput" class="form-control search-input" placeholder="Search title, ID, category, or department...">
+                    </div>
+                </div>
+                <div class="col-md-7 col-lg-8">
+                    <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
+                        <span class="text-muted small fw-bold me-1 d-none d-lg-inline-block">
+                            <i class="bi bi-funnel-fill me-1"></i>FILTER:
+                        </span>
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="status-processing">Processing</button>
+                        <button class="filter-btn" data-filter="status-completed">Completed</button>
+                        <button class="filter-btn" data-filter="status-failed">Failed</button>
+                        <button class="filter-btn" data-filter="validity-valid">Valid</button>
+                        <button class="filter-btn" data-filter="validity-invalid">Invalid</button>
+                        <button class="filter-btn" data-filter="severity-critical">Critical</button>
+                        <button class="filter-btn" data-filter="severity-high">High</button>
+                        <button class="filter-btn" data-filter="severity-recent">Recent</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaint Cards Grid -->
+            <div class="row g-4" id="complaintsGrid">
+                {% for complaint in complaints %}
+                
+                <div class="col-12 col-lg-6 complaint-card-wrapper" 
+                    data-status="{{ complaint.analysis_status }}" 
+                    data-severity="{{ complaint.severity }}" 
+                    data-title="{{ complaint.title }}" 
+                    data-id="{{ complaint.id }}" 
+                    data-category="{{ complaint.category|default:'' }}" 
+                    data-department="{{ complaint.department|default:'' }}"
+                    data-created="{{ complaint.created_at|date:'U' }}"
+                    data-valid="{% if complaint.is_valid == False %}false{% else %}true{% endif %}">
+                    
+                    <a href="{% url 'complaints:mycomplaint_detail' complaint.pk %}" class="text-decoration-none text-dark d-block h-100">
+                        <div class="card complaint-card h-100 overflow-hidden shadow-sm">
+                            <!-- Left indicator accent bar shown on hover -->
+                            <div class="hover-indicator"></div>
+                            
+                            <div class="card-body p-4">
+                                <div class="d-flex flex-column flex-sm-row gap-4">
+                                    
+                                    <!-- Image Column -->
+                                    <div class="image-wrapper shadow-sm mx-auto mx-sm-0">
+                                        {% if complaint.image %}
+                                            <img src="{{ complaint.image.url }}" alt="{{ complaint.title }}" class="complaint-thumbnail">
+                                        {% else %}
+                                            <div class="placeholder-icon-container">
+                                                <i class="bi bi-file-earmark-text"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Content Column -->
+                                    <div class="flex-grow-1">
+                                        
+                                        <!-- Badges Header -->
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge category-badge text-uppercase">
+                                                    {{ complaint.category|default:"Constituency Issue" }}
+                                                </span>
+                                                {% if complaint.is_valid == False %}
+                                                    <span class="badge bg-invalid-badge rounded-pill px-2.5 py-1">
+                                                        ⚠️ Invalid
+                                                    </span>
+                                                {% elif complaint.is_valid == True %}
+                                                    <span class="badge bg-valid-badge rounded-pill px-2.5 py-1">
+                                                        ✓ Valid
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Status Badge -->
+                                            {% if complaint.analysis_status == "Processing" %}
+                                                <span class="badge bg-status-processing rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5">
+                                                    <span class="dot-indicator bg-status-processing-dot animate-pulse"></span>
+                                                    ⏳ Processing
+                                                </span>
+                                            {% elif complaint.analysis_status == "Completed" %}
+                                                <span class="badge bg-status-completed rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5">
+                                                    <span class="dot-indicator bg-status-completed-dot"></span>
+                                                    ✅ Completed
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-status-failed rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5">
+                                                    <span class="dot-indicator bg-status-failed-dot"></span>
+                                                    ❌ Failed
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Title -->
+                                        <h4 class="fw-bold mb-2 text-slate-900" style="font-size: 1.15rem; line-height: 1.4;">
+                                            {{ complaint.title|truncatechars:45 }}
+                                        </h4>
+                                        
+                                        <!-- Description -->
+                                        <p class="text-muted small mb-4" style="line-height: 1.6; font-size: 0.875rem;">
+                                            {{ complaint.description|truncatechars:100 }}
+                                        </p>
+                                        
+                                        <!-- Grid Details -->
+                                        <div class="row g-3 pt-3 border-top" style="border-color: #f1f5f9 !important;">
+                                            
+                                            <!-- Severity -->
+                                            <div class="col-6 col-sm-4">
+                                                <div class="meta-label">Severity</div>
+                                                <div class="meta-value mt-1">
+                                                    {% if complaint.severity %}
+                                                        {% if complaint.severity == "Critical" %}
+                                                            <span class="badge severity-badge bg-sev-critical">Critical</span>
+                                                        {% elif complaint.severity == "High" %}
+                                                            <span class="badge severity-badge bg-sev-high">High</span>
+                                                        {% elif complaint.severity == "Medium" %}
+                                                            <span class="badge severity-badge bg-sev-medium">Medium</span>
+                                                        {% else %}
+                                                            <span class="badge severity-badge bg-sev-low">Low</span>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <span class="text-muted">—</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            <!-- Department -->
+                                            <div class="col-6 col-sm-4">
+                                                <div class="meta-label">Department</div>
+                                                <div class="meta-value mt-1 text-truncate" title="{{ complaint.department|default:'—' }}">
+                                                    {{ complaint.department|default:"—" }}
+                                                </div>
+                                            </div>
+
+                                            <!-- Date Submitted -->
+                                            <div class="col-12 col-sm-4">
+                                                <div class="meta-label">Submitted</div>
+                                                <div class="meta-value mt-1 text-slate-600">
+                                                    {{ complaint.created_at|date:"d M Y" }}
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                        
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                            
+                            <!-- Footer -->
+                            <div class="card-footer px-4 py-3 bg-light border-0 d-flex justify-content-between align-items-center" style="border-top: 1px solid #f1f5f9 !important;">
+                                <span class="text-muted small fw-semibold" style="font-family: monospace; font-size: 0.775rem;">
+                                    ID: #{{ complaint.id }}
+                                </span>
+                                <span class="text-primary small fw-bold d-inline-flex align-items-center gap-1">
+                                    View Details 
+                                    <i class="bi bi-arrow-right details-arrow"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                    
+                </div>
+                
+                {% endfor %}
+            </div>
+            
+            <!-- Search/Filters Empty State -->
+            <div id="noComplaintsSearchState" class="d-none text-center py-5 px-4 mt-4 border border-dashed rounded-4 bg-white shadow-sm">
+                <div class="illustration-icon mb-3">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h5 class="fw-bold text-slate-900 mb-1">No matching complaints found</h5>
+                <p class="text-muted small mb-4" style="font-size: 0.925rem;">We couldn't find any complaints matching your search query or selected filters.</p>
+                <button id="resetFiltersBtn" class="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2">
+                    Clear Filters
+                </button>
+            </div>
+
+            {% else %}
+            
+            <!-- Database Empty State -->
+            <div class="card border-0 shadow-sm empty-state-card mt-4">
+                <div class="card-body text-center py-5 px-4">
+                    <div class="illustration-icon mb-4" style="background-color: rgba(37, 99, 235, 0.06); color: #2563eb;">
+                        <i class="bi bi-mailbox2"></i>
+                    </div>
+                    <h4 class="fw-bold text-slate-900 mb-2">No complaints submitted yet</h4>
+                    <p class="text-muted mx-auto mb-4" style="max-width: 460px; font-size: 0.975rem; line-height: 1.6;">
+                        Have an issue in your constituency? Submit your report now and track its progress in real-time on this dashboard.
+                    </p>
+                    <a href="{% url 'complaints:create_complaint' %}" class="btn btn-new-complaint d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Submit Your First Complaint</span>
+                    </a>
+                </div>
+            </div>
+            
+            {% endif %}
+            
+        </div>
+        
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+<!-- Frontend Logic for Stats Counting, Searching, and Filtering -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. Calculate Stats from rendered DOM or template items
+        // let total = 0;
+        // let processing = 0;
+        // let completed = 0;
+        // let failed = 0;
+        
+        // {% if complaints %}
+        //     {% for complaint in complaints %}
+        //         total++;
+        //         {% if complaint.analysis_status == "Processing" %}
+        //             processing++;
+        //         {% elif complaint.analysis_status == "Completed" %}
+        //             completed++;
+        //         {% else %}
+        //             failed++;
+        //         {% endif %}
+        //     {% endfor %}
+        // {% endif %}
+        
+        const totalEl = document.getElementById("stat-total");
+        const processingEl = document.getElementById("stat-processing");
+        const completedEl = document.getElementById("stat-completed");
+        const failedEl = document.getElementById("stat-failed");
+        const invalidEl = document.getElementById("stat-invalid");
+        
+        if (totalEl) totalEl.innerText = {{total}};
+        if (processingEl) processingEl.innerText = {{processing}};
+        if (completedEl) completedEl.innerText = {{completed}};
+        if (failedEl) failedEl.innerText = {{failed}};
+        if (invalidEl) invalidEl.innerText = {{invalid}};
+        
+        // 2. Client-side Search and Filter logic
+        const searchInput = document.getElementById("searchInput");
+        const filterBtns = document.querySelectorAll(".filter-btn");
+        const cardWrappers = document.querySelectorAll(".complaint-card-wrapper");
+        const noResultsEl = document.getElementById("noComplaintsSearchState");
+        const resetBtn = document.getElementById("resetFiltersBtn");
+        
+        let currentFilter = "all";
+        let currentQuery = "";
+        
+        function updateFilters() {
+            let visibleCount = 0;
+            
+            cardWrappers.forEach((wrapper, index) => {
+                const title = (wrapper.getAttribute("data-title") || "").toLowerCase();
+                const id = (wrapper.getAttribute("data-id") || "").toLowerCase();
+                const category = (wrapper.getAttribute("data-category") || "").toLowerCase();
+                const department = (wrapper.getAttribute("data-department") || "").toLowerCase();
+                
+                const status = (wrapper.getAttribute("data-status") || "").toLowerCase();
+                const severity = (wrapper.getAttribute("data-severity") || "").toLowerCase();
+                const isValid = wrapper.getAttribute("data-valid") === "true";
+                
+                // Check if card matches search query
+                const matchesSearch = currentQuery === "" || 
+                    title.includes(currentQuery) || 
+                    id.includes(currentQuery) || 
+                    category.includes(currentQuery) || 
+                    department.includes(currentQuery);
+                
+                // Check if card matches filter chip selection
+                let matchesFilter = false;
+                if (currentFilter === "all") {
+                    matchesFilter = true;
+                } else if (currentFilter === "status-processing") {
+                    matchesFilter = (status === "processing");
+                } else if (currentFilter === "status-completed") {
+                    matchesFilter = (status === "completed");
+                } else if (currentFilter === "status-failed") {
+                    matchesFilter = (status !== "processing" && status !== "completed");
+                } else if (currentFilter === "validity-valid") {
+                    matchesFilter = (isValid === true);
+                } else if (currentFilter === "validity-invalid") {
+                    matchesFilter = (isValid === false);
+                } else if (currentFilter === "severity-critical") {
+                    matchesFilter = (severity === "critical");
+                } else if (currentFilter === "severity-high") {
+                    matchesFilter = (severity === "high");
+                } else if (currentFilter === "severity-recent") {
+                    // Show top 3 complaints (they are output in reverse-chronological order from views)
+                    matchesFilter = (index < 3);
+                }
+                
+                // Apply display state with transitions
+                if (matchesSearch && matchesFilter) {
+                    wrapper.style.display = "block";
+                    // Apply brief timeout for browser repaint to trigger transition
+                    setTimeout(() => {
+                        wrapper.style.opacity = "1";
+                        wrapper.style.transform = "translateY(0) scale(1)";
+                    }, 50);
+                    visibleCount++;
+                } else {
+                    wrapper.style.opacity = "0";
+                    wrapper.style.transform = "translateY(10px) scale(0.98)";
+                    setTimeout(() => {
+                        wrapper.style.display = "none";
+                    }, 200);
+                }
+            });
+            
+            // Show/hide no results alert
+            if (noResultsEl) {
+                if (visibleCount === 0 && cardWrappers.length > 0) {
+                    noResultsEl.classList.remove("d-none");
+                } else {
+                    noResultsEl.classList.add("d-none");
+                }
+            }
+        }
+        
+        // Event listeners
+        if (searchInput) {
+            searchInput.addEventListener("input", function(e) {
+                currentQuery = e.target.value.toLowerCase().trim();
+                updateFilters();
+            });
+        }
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener("click", function() {
+                filterBtns.forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+                currentFilter = this.getAttribute("data-filter");
+                updateFilters();
+            });
+        });
+        
+        if (resetBtn) {
+            resetBtn.addEventListener("click", function() {
+                if (searchInput) searchInput.value = "";
+                currentQuery = "";
+                
+                filterBtns.forEach(b => b.classList.remove("active"));
+                const allBtn = document.querySelector('.filter-btn[data-filter="all"]');
+                if (allBtn) allBtn.classList.add("active");
+                currentFilter = "all";
+                
+                updateFilters();
+            });
+        }
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "complaints/base.html" %}
+
+{% block title %}JanSankalpAI - Contact {{ complaint.title }}{% endblock %}
+
+{% block content %}
+
+<div class="max-w-5xl mx-auto px-6 py-10">
+
+    <h1 class="text-4xl font-extrabold text-slate-800 mb-3">
+        📞 Contact Us
+    </h1>
+
+    <p class="text-slate-500 mb-8">
+        Have questions, suggestions, or feedback? We'd love to hear from you. Feel free to reach out using the details below.
+    </p>
+
+    <div class="bg-white rounded-2xl shadow border border-slate-200 p-8 space-y-8">
+
+        <!-- Email -->
+        <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center text-2xl">
+                📧
+            </div>
+
+            <div>
+                <h2 class="text-lg font-bold text-slate-800">
+                    Email
+                </h2>
+
+                <a href="mailto:amit4528990@gmail.com"
+                   class="text-indigo-600 hover:underline">
+                    amit4528990@gmail.com
+                </a>
+
+                <p class="text-sm text-slate-500 mt-1">
+                    For technical support, suggestions, or project-related queries.
+                </p>
+            </div>
+        </div>
+
+        <!-- LinkedIn -->
+        <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-2xl">
+                💼
+            </div>
+
+            <div>
+                <h2 class="text-lg font-bold text-slate-800">
+                    LinkedIn
+                </h2>
+
+                <a href="https://www.linkedin.com/in/amit-dubey-613355371/"
+                   target="_blank"
+                   class="text-indigo-600 hover:underline">
+                    linkedin.com/in/amit-dubey-613355371
+                </a>
+
+                <p class="text-sm text-slate-500 mt-1">
+                    Connect professionally and stay updated with my work.
+                </p>
+            </div>
+        </div>
+
+        <!-- GitHub -->
+        <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl">
+                💻
+            </div>
+
+            <div>
+                <h2 class="text-lg font-bold text-slate-800">
+                    GitHub
+                </h2>
+
+                <a href="https://github.com/Amit-dubey-007"
+                   target="_blank"
+                   class="text-indigo-600 hover:underline">
+                    github.com/Amit-dubey-007
+                </a>
+
+                <p class="text-sm text-slate-500 mt-1">
+                    Explore the source code and my open-source projects.
+                </p>
+            </div>
+        </div>
+
+        <!-- About -->
+        <div class="bg-indigo-50 border-l-4 border-indigo-600 rounded-xl p-5">
+            <h3 class="font-bold text-indigo-700 mb-2">
+                About JanSankalpAI
+            </h3>
+
+            <p class="text-slate-700">
+                JanSankalpAI is an AI-powered public grievance platform designed to help citizens report local issues efficiently while enabling government authorities to analyze, prioritize, and resolve complaints through intelligent automation.
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

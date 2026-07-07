@@ -1,0 +1,1046 @@
+{% extends "complaints/base.html" %}
+
+{% block title %}Complaint Details - {{ complaint.title }}{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+  
+  .font-jakarta {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  
+  @keyframes progress-stripe {
+    0% { background-position: 1rem 0; }
+    100% { background-position: 0 0; }
+  }
+  
+  .animate-stripes {
+    background-image: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.15) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0.15) 75%,
+      transparent 75%,
+      transparent
+    );
+    background-size: 1rem 1rem;
+    animation: progress-stripe 1s linear infinite;
+  }
+  
+  @keyframes pulse-subtle {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.02); opacity: 0.98; }
+  }
+  
+  .animate-pulse-subtle {
+    animation: pulse-subtle 3s ease-in-out infinite;
+  }
+  
+  .comment-card {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 1rem;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .comment-card h5 {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+  }
+  .comment-card p {
+    font-size: 0.875rem;
+    color: #475569;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .comment-card small {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+</style>
+
+{% if complaint.analysis_status == "Processing" %}
+<script>
+    setTimeout(function () {
+        location.reload();
+    }, 3000);
+</script>
+{% endif %}
+
+<div class="min-h-screen bg-slate-50/50 py-8 px-4 sm:px-6 lg:px-8 font-jakarta">
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- Top Action Bar -->
+        <div class="flex items-center justify-between">
+            <a href="{% url 'complaints:public_dashboard' %}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition shadow-xs">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Dashboard
+            </a>
+            <div class="flex gap-2">
+                <button onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition shadow-xs">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download Report
+                </button>
+                
+                <a href="{% url 'complaints:confirm_delete_complaint' complaint.id %}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-rose-600 border border-rose-600 rounded-xl hover:bg-rose-700 transition shadow-xs">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                </a>
+            </div>
+        </div>
+
+        <!-- Success Banner -->
+        <div class="bg-white border border-emerald-100 rounded-2xl p-6 shadow-xs flex items-start gap-4">
+            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-2xl flex-shrink-0">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-slate-900">Complaint Submitted Successfully!</h3>
+                <p class="text-sm text-slate-500 mt-1">Your complaint has been registered and is being processed.</p>
+            </div>
+        </div>
+
+        <!-- Key Info Grid (5 Cards) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <!-- Complaint ID -->
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Complaint ID</span>
+                <span class="text-lg font-bold text-slate-800 mt-1">#{{ complaint.id }}</span>
+            </div>
+
+            <!-- Submitted On -->
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Submitted On</span>
+                    <span class="text-sm font-bold text-slate-800 mt-0.5 block">{{ complaint.created_at|date:"Y-m-d H:i" }}</span>
+                </div>
+            </div>
+
+            <!-- AI Status -->
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+                <div class="p-3 {% if complaint.analysis_status == 'Completed' %}bg-emerald-50 text-emerald-600{% elif complaint.analysis_status == 'Processing' %}bg-amber-50 text-amber-600{% else %}bg-rose-50 text-rose-600{% endif %} rounded-xl">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">AI Status</span>
+                    <span class="text-sm font-bold text-slate-800 mt-0.5 block">{{ complaint.analysis_status }}</span>
+                </div>
+            </div>
+
+            <!-- Government Status -->
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+                <div class="p-3 bg-slate-50 text-slate-600 rounded-xl">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Government Status</span>
+                    <span class="text-sm font-bold text-slate-800 mt-0.5 block">{{ complaint.status }}</span>
+                </div>
+            </div>
+
+            <!-- Total Supports -->
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Total Supports</span>
+                    <span class="text-sm font-bold text-slate-850 mt-0.5 block">🤝 <span class="support-count-val">{{ complaint.supports.count|default:"0" }}</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Title Header Card -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs flex items-center gap-5">
+            <div class="p-4 bg-indigo-600 text-white rounded-2xl shadow-md">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <div class="space-y-1">
+                <h2 class="text-2xl font-bold text-slate-900">{{ complaint.title }}</h2>
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-slate-500">
+                    <span class="flex items-center gap-1">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {{ complaint.address }}
+                    </span>
+                    <span class="text-slate-300">|</span>
+                    <span class="flex items-center gap-1">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L16 4m0 13V4m0 0L9 7" />
+                        </svg>
+                        {{ complaint.district }}, {{ complaint.state }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Layout (Grid) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left 2 Columns -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <!-- AI Processing Card (Conditional) -->
+                {% if complaint.analysis_status == "Processing" %}
+                <div class="bg-amber-50/40 border border-amber-200/80 rounded-3xl p-6 shadow-xs space-y-6 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500"></div>
+                    
+                    <div class="flex flex-col sm:flex-row items-center gap-6">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="w-24 h-24 bg-white rounded-full border-2 border-amber-200 shadow-sm flex items-center justify-center p-2 relative animate-pulse-subtle">
+                                <svg class="w-16 h-16 text-slate-700" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="14" y="22" width="36" height="28" rx="8" fill="#F1F5F9" stroke="#475569" stroke-width="3"/>
+                                    <rect x="22" y="10" width="20" height="12" rx="4" fill="#E2E8F0" stroke="#475569" stroke-width="3"/>
+                                    <circle cx="32" cy="16" r="3" fill="#475569"/>
+                                    <rect x="22" y="30" width="8" height="6" rx="3" fill="#0F172A"/>
+                                    <rect x="34" y="30" width="8" height="6" rx="3" fill="#0F172A"/>
+                                    <line x1="32" y1="10" x2="32" y2="4" stroke="#475569" stroke-width="3"/>
+                                    <circle cx="32" cy="3" r="2.5" fill="#F59E0B" stroke="#475569" stroke-width="1.5"/>
+                                    <rect x="10" y="31" width="4" height="10" rx="2" fill="#475569"/>
+                                    <rect x="50" y="31" width="4" height="10" rx="2" fill="#475569"/>
+                                    <path d="M26 42H38" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-ping"></span>
+                                Processing
+                            </span>
+                        </div>
+                        
+                        <div class="flex-1 space-y-2 text-center sm:text-left">
+                            <h3 class="text-xl font-bold text-slate-800 flex items-center justify-center sm:justify-start gap-2">
+                                🤖 AI is analyzing your complaint...
+                            </h3>
+                            <p class="text-sm text-slate-600 leading-relaxed max-w-xl">
+                                Our AI is working to understand your complaint and assign it to the right department.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Wizard steps -->
+                    <div class="relative py-4">
+                        <div class="absolute top-1/2 left-4 right-4 h-0.5 bg-slate-200 -translate-y-1/2 z-0 hidden sm:block"></div>
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 relative z-10">
+                            <!-- Step 1 -->
+                            <div class="flex flex-col items-center text-center space-y-2">
+                                <div class="w-10 h-10 rounded-full bg-white border-2 border-amber-500 shadow-sm flex items-center justify-center text-amber-600">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700">Detecting Category</span>
+                            </div>
+                            
+                            <!-- Step 2 -->
+                            <div class="flex flex-col items-center text-center space-y-2">
+                                <div class="w-10 h-10 rounded-full bg-white border-2 border-amber-500 shadow-sm flex items-center justify-center text-amber-600">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-bold text-slate-700">Finding Department</span>
+                            </div>
+                            
+                            <!-- Step 3 -->
+                            <div class="flex flex-col items-center text-center space-y-2">
+                                <div class="w-10 h-10 rounded-full bg-white border-2 border-slate-200 shadow-sm flex items-center justify-center text-slate-400">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-bold text-slate-400">Calculating Priority</span>
+                            </div>
+                            
+                            <!-- Step 4 -->
+                            <div class="flex flex-col items-center text-center space-y-2">
+                                <div class="w-10 h-10 rounded-full bg-white border-2 border-slate-200 shadow-sm flex items-center justify-center text-slate-400">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-bold text-slate-400">Generating Summary</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Yellow animated progress bar -->
+                    <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden border border-slate-200 shadow-inner">
+                        <div class="bg-amber-400 h-full rounded-full animate-stripes" style="width: 45%;"></div>
+                    </div>
+                    
+                    <p class="text-xs text-slate-500 text-center leading-relaxed">
+                        This usually takes less than a second. Please keep this page open. This page will refresh automatically.
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Complaint Details Card -->
+                <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs space-y-6">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Complaint Details
+                    </h3>
+                    
+                    <!-- Description Block -->
+                    <div class="space-y-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Description</span>
+                        <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                            {{ complaint.description|default:"No description provided." }}
+                        </div>
+                    </div>
+                    
+                    <!-- State, District, Visibility, Address fields -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl flex items-center gap-3">
+                            <div class="p-2 bg-indigo-50 text-indigo-500 rounded-lg">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">State</span>
+                                <span class="text-sm font-semibold text-slate-800">{{ complaint.state }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl flex items-center gap-3">
+                            <div class="p-2 bg-emerald-50 text-emerald-500 rounded-lg">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">District</span>
+                                <span class="text-sm font-semibold text-slate-800">{{ complaint.district }}</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl flex items-center gap-3">
+                            <div class="p-2 bg-purple-50 text-purple-500 rounded-lg">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Visibility</span>
+                                <span class="text-sm font-semibold text-slate-800">{{ complaint.visibility }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl flex items-center gap-3 sm:col-span-3">
+                            <div class="p-2 bg-rose-50 text-rose-500 rounded-lg">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Address</span>
+                                <span class="text-sm font-semibold text-slate-800">{{ complaint.address }}</span>
+                            </div>
+                            <br>
+                           
+                            <hr>
+                            <hr>
+                            <hr>
+                            {% if not complaint.is_valid %}
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 text-red-700 border border-red-200 text-xs font-bold">
+                                <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                Invalid
+                            </span>
+                            <br>
+                            <hr>
+                            <hr>
+                            <hr>
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">❌ Invalid Reason</span>
+                                <span class="text-sm font-semibold text-slate-800">{{ complaint.invalid_reason }}</span>
+                            </div>
+                            {% endif %}
+                            
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Uploaded Image Section -->
+                {% if complaint.image %}
+                <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs space-y-4">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Uploaded Image
+                    </h3>
+                    
+                    <div class="relative max-w-xl rounded-2xl overflow-hidden border border-slate-200 shadow-sm cursor-pointer group" onclick="openImageModal()">
+                        <img src="{{ complaint.image.url }}" alt="Complaint Media" class="w-full h-auto object-cover max-h-[300px] transition duration-300 group-hover:scale-[1.01]">
+                        <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                            <span class="bg-white/95 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1">
+                                Click to Expand
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 21h7a2 2 0 002-2V5a2 2 0 00-2-2h-7m-4 4l-4 4m0 0l4 4m-4-4h18" />
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="openImageModal()" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition shadow-2xs">
+                        View Full Image
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                    </button>
+                </div>
+                {% endif %}
+
+                <!-- Voice Recording Section -->
+                {% if complaint.voice %}
+                <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs space-y-4">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                        Voice Recording
+                    </h3>
+                    <div class="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl max-w-xl">
+                        <audio controls class="w-full focus:outline-none">
+                            <source src="{{ complaint.voice }}">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- AI Analysis Results Card -->
+                {% if complaint.analysis_status == "Completed" %}
+                <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs space-y-6">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        AI Analysis Results
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Left Info Panel -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3.5 bg-slate-50/50 border border-slate-100 rounded-xl">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Category
+                                </span>
+                                <span class="text-sm font-bold text-indigo-600 bg-indigo-50/50 px-3 py-1 rounded-lg border border-indigo-100">{{ complaint.category }}</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3.5 bg-slate-50/50 border border-slate-100 rounded-xl">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    Department
+                                </span>
+                                <span class="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">{{ complaint.department }}</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3.5 bg-slate-50/50 border border-slate-100 rounded-xl">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    Priority Level
+                                </span>
+                                <span class="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">{{ complaint.priority_level|default:complaint.severity }}</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3.5 bg-slate-50/50 border border-slate-100 rounded-xl">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    Visibility
+                                </span>
+                                <span class="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">{{ complaint.visibility }}</span>
+                            </div>
+
+                            <!-- Expected Government Action (suggested_actions) -->
+                            {% if complaint.suggested_actions %}
+                            <div class="p-4 bg-indigo-50/30 border border-indigo-100 rounded-2xl space-y-1.5">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Expected Government Action</span>
+                                <p class="text-xs text-slate-600 leading-relaxed">
+                                    {{ complaint.suggested_actions }}
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Right Info Panel -->
+                        <div class="space-y-6">
+                            <!-- AI Summary -->
+                            <div class="space-y-2">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">AI Summary</span>
+                                <p class="p-4 bg-indigo-50/30 border border-indigo-100 rounded-2xl text-sm text-indigo-950 leading-relaxed">
+                                    {{ complaint.ai_summary }}
+                                </p>
+                            </div>
+
+                            <!-- Severity Reason -->
+                            {% if complaint.severity_reason %}
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Severity Reason</span>
+                                    <!-- Severity Badge -->
+                                    {% if complaint.severity == "Critical" or complaint.severity == "High" %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100 shadow-2xs">
+                                            🚨 {{ complaint.severity }}
+                                        </span>
+                                    {% elif complaint.severity == "Medium" %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100 shadow-2xs">
+                                            ⚠️ {{ complaint.severity }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-2xs">
+                                            ✅ {{ complaint.severity }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if complaint.severity == "Critical" or complaint.severity == "High" %}
+                                    <p class="p-4 bg-rose-50/30 border border-rose-100 rounded-2xl text-sm text-rose-950 leading-relaxed">
+                                        {{ complaint.severity_reason }}
+                                    </p>
+                                {% elif complaint.severity == "Medium" %}
+                                    <p class="p-4 bg-amber-50/30 border border-amber-100 rounded-2xl text-sm text-amber-950 leading-relaxed">
+                                        {{ complaint.severity_reason }}
+                                    </p>
+                                {% else %}
+                                    <p class="p-4 bg-emerald-50/30 border border-emerald-100 rounded-2xl text-sm text-emerald-950 leading-relaxed">
+                                        {{ complaint.severity_reason }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Priority Score and AI Confidence Progress Bars -->
+                            <div class="space-y-4">
+                                <!-- Priority Score -->
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between text-xs font-bold text-slate-600">
+                                        <span>Priority Score</span>
+                                        <span class="text-amber-600">{{ complaint.priority_score }}%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden border border-slate-200/60 shadow-2xs">
+                                        <div class="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full" style="width: {{ complaint.priority_score }}%;"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- AI Confidence -->
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between text-xs font-bold text-slate-600">
+                                        <span>AI Confidence</span>
+                                        <span class="text-emerald-600 confidence-text-val">{{ complaint.confidence_score|default:complaint.ai_confidence }}%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden border border-slate-200/60 shadow-2xs">
+                                        <div class="bg-gradient-to-r from-emerald-400 to-emerald-500 h-full rounded-full confidence-bar-val" style="width: 0%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Comments Section -->
+                <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs space-y-6">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        Discussion & Remarks (<span class="comment-count">{{ complaint.comments.count }}</span>)
+                    </h3>
+
+                    <!-- Comment Form -->
+                    <form class="comment-form" data-complaint-id="{{ complaint.id }}">
+                        {% csrf_token %}
+                        <div class="flex gap-4">
+                            <div class="h-10 w-10 rounded-xl bg-slate-200 shrink-0 flex items-center justify-center font-bold text-slate-650">
+                                {{ request.user.username|slice:":1"|upper|default:"?" }}
+                            </div>
+                            <div class="flex-grow space-y-3">
+                                <textarea name="comment" rows="3" class="comment-input w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="Post a comment or update about the progress..."></textarea>
+                                <button type="submit" class="rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-indigo-700 transition-all">
+                                    Post Remark
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Comments Container -->
+                    <div class="comments-container max-h-96 overflow-y-auto space-y-4 pt-6 border-t border-slate-100 pr-2" id="comments-{{ complaint.id }}">
+                        {% for comment in complaint.comments.all %}
+                            <div class="comment-card">
+                                <div class="flex items-center justify-between border-b border-slate-100/50 pb-1.5 mb-1.5">
+                                    <h5 class="flex items-center gap-1.5">
+                                        <span class="h-5 w-5 rounded bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">
+                                            {{ comment.user.username|slice:":1"|upper }}
+                                        </span>
+                                        {{ comment.user.username }}
+                                    </h5>
+                                    <small>{{ comment.created_at|timesince }} ago</small>
+                                </div>
+                                <p>{{ comment.comment }}</p>
+                            </div>
+                        {% empty %}
+                            <div class="no-comments text-center py-6 text-slate-400">
+                                <span class="text-xs font-bold uppercase tracking-wider">No discussions yet. Be the first to comment!</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Right 1 Column Sidebar -->
+            <div class="space-y-8">
+                
+                <!-- AI Analysis Status Card -->
+                <div class="bg-emerald-50/40 border border-emerald-100 rounded-3xl p-6 shadow-xs space-y-4">
+                    <h3 class="text-base font-bold text-emerald-900 flex items-center gap-2">
+                        <span class="text-lg">🤖</span>
+                        AI Analysis Status
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        {% if complaint.analysis_status == "Completed" %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                            Completed
+                        </span>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            AI analysis completed successfully.
+                        </p>
+                        {% elif complaint.analysis_status == "Processing" %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
+                            Processing
+                        </span>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            AI is currently reviewing and categorizing your complaint.
+                        </p>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                            Failed
+                        </span>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            AI analysis failed or timed out.
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Government Status Card -->
+                <div class="bg-amber-50/30 border border-amber-100 rounded-3xl p-6 shadow-xs space-y-4 relative overflow-hidden">
+                    <h3 class="text-base font-bold text-amber-900 flex items-center gap-2">
+                        <span class="text-lg">🏫</span>
+                        Government Status
+                    </h3>
+                    
+                    <div class="space-y-3 relative z-10">
+                        {% if complaint.status == "Resolved" %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                            Resolved
+                        </span>
+                        <p class="text-sm text-slate-600 leading-relaxed max-w-[200px]">
+                            Your complaint has been successfully resolved.
+                        </p>
+                        {% elif complaint.status == "In Progress" %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                            In Progress
+                        </span>
+                        <p class="text-sm text-slate-600 leading-relaxed max-w-[200px]">
+                            Government authorities are currently working on resolving this issue.
+                        </p>
+                        {% else %}
+
+                            {% if complaint.is_valid %}
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                                    Pending Review
+                                </span>
+                                <p class="text-sm text-slate-600 leading-relaxed max-w-[200px]">
+                                    Your complaint is waiting to be reviewed by the government authorities.
+                                </p>
+                            {% else %}
+                                <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 text-red-700 border border-red-200 text-xs font-bold">
+                                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                    Invalid
+                                </span>
+                                <p class="text-sm text-slate-600 leading-relaxed max-w-[200px]">
+                                    Your complaint is invalid ❌ it will not reach to government.
+                                </p>
+                                
+                                
+                            {% endif %}
+                        {% endif %}
+                        
+                    </div>
+                    
+                    <div class="absolute bottom-2 right-2 w-28 h-20 opacity-20 pointer-events-none z-0">
+                        <svg class="w-full h-full text-slate-800" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="65" width="100" height="10" fill="currentColor"/>
+                            <rect x="15" y="60" width="90" height="5" fill="currentColor"/>
+                            <rect x="25" y="35" width="6" height="25" fill="currentColor"/>
+                            <rect x="41" y="35" width="6" height="25" fill="currentColor"/>
+                            <rect x="57" y="35" width="6" height="25" fill="currentColor"/>
+                            <rect x="73" y="35" width="6" height="25" fill="currentColor"/>
+                            <rect x="89" y="35" width="6" height="25" fill="currentColor"/>
+                            <rect x="20" y="30" width="80" height="5" fill="currentColor"/>
+                            <polygon points="20,30 60,15 100,30" fill="currentColor"/>
+                            <path d="M50,15 C50,5 70,5 70,15 Z" fill="currentColor"/>
+                            <line x1="60" y1="5" x2="60" y2="1" stroke="currentColor" stroke-width="1"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Complaint Timeline -->
+                <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs space-y-6">
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Complaint Timeline
+                    </h3>
+                    
+                    <div class="relative pl-6 space-y-6">
+                        <div class="absolute left-2.5 top-2.5 bottom-2.5 w-0.5 bg-slate-100 z-0"></div>
+                        
+                        <!-- Step 1: Submitted -->
+                        <div class="relative z-10 flex gap-4">
+                            <div class="absolute -left-6 w-5.5 h-5.5 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-white shadow-xs">
+                                <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div class="space-y-0.5">
+                                <h4 class="text-xs font-bold text-slate-800">Complaint Submitted</h4>
+                                <p class="text-[10px] text-slate-400">{{ complaint.created_at|date:"Y-m-d H:i" }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 2: AI Analysis -->
+                        <div class="relative z-10 flex gap-4">
+                            {% if complaint.analysis_status == "Completed" %}
+                            <div class="absolute -left-6 w-5.5 h-5.5 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-white shadow-xs">
+                                <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div class="space-y-0.5">
+                                <h4 class="text-xs font-bold text-slate-800">AI Analysis Completed</h4>
+                                <p class="text-[10px] text-slate-400">{{ complaint.analysis_completed_at|default:complaint.updated_at|date:"Y-m-d H:i" }}</p>
+                            </div>
+                            {% elif complaint.analysis_status == "Processing" %}
+                            <div class="absolute -left-6 w-5.5 h-5.5 rounded-full bg-amber-500 border-4 border-white flex items-center justify-center text-white shadow-xs animate-pulse">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                            </div>
+                            <div class="space-y-0.5">
+                                <h4 class="text-xs font-bold text-slate-800">AI Analysis in Progress</h4>
+                                <p class="text-[10px] text-slate-400">Processing...</p>
+                            </div>
+                            {% else %}
+                            <div class="absolute -left-6 w-5.5 h-5.5 rounded-full bg-slate-200 border-4 border-white flex items-center justify-center text-slate-400 shadow-xs">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                            </div>
+                            <div class="space-y-0.5">
+                                <h4 class="text-xs font-bold text-slate-400">AI Analysis</h4>
+                                <p class="text-[10px] text-slate-300">Pending</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Step 3: Government Review -->
+                        <div class="relative z-10 flex gap-4">
+                            {% if complaint.status == "In Progress" or complaint.status == "Resolved" %}
+                            <div class="absolute -left-6 w-5.5 h-5.5 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-white shadow-xs">
+                                <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div class="space-y-0.5">
+                                <h4 class="text-xs font-bold text-slate-800">Under Government Review</h4>
+                                <p class="text-[10px] text-slate-400">Active</p>
+                            </div>
+                            {% else %}
+                            <div class="absolute -left-6 w-5.5 h-5.5 rounded-full bg-slate-200 border-4 border-white flex items-center justify-center text-slate-400 shadow-xs">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                            </div>
+                            <div class="space-y-0.5">
+                                <h4 class="text-xs font-bold text-slate-400">Under Government Review</h4>
+                                <p class="text-[10px] text-slate-300">Pending</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Step 4: Resolved / Action Taken -->
+                        <div class="relative z-10 flex gap-4">
+                            {% if complaint.status == "Resolved" %}
+                            <div class="absolute -left-6 w-5.5 h-5.5 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-white shadow-xs">
+                                <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div class="space-y-0.5">
+                                <h4 class="text-xs font-bold text-slate-800">Action Taken</h4>
+                                <p class="text-[10px] text-slate-400">Resolved</p>
+                            </div>
+                            {% else %}
+                            <div class="absolute -left-6 w-5.5 h-5.5 rounded-full bg-slate-200 border-4 border-white flex items-center justify-center text-slate-400 shadow-xs">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                            </div>
+                            <div class="space-y-0.5">
+                                <h4 class="text-xs font-bold text-slate-400">Action Taken</h4>
+                                <p class="text-[10px] text-slate-300">Pending</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Priority & Confidence Progress Bar Card -->
+                <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs space-y-6">
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Priority & Confidence
+                    </h3>
+                    
+                    <div class="space-y-5">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-600">
+                                <span>Priority Score</span>
+                                <span class="text-amber-600">{{ complaint.priority_score }}%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden border border-slate-200/60 shadow-2xs">
+                                <div class="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full" style="width: {{ complaint.priority_score }}%;"></div>
+                            </div>
+                            <p class="text-[10px] text-slate-400 leading-normal">
+                                Higher score means higher priority.
+                            </p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-600">
+                                <span>AI Confidence</span>
+                                <span class="text-emerald-600 confidence-text-val">{{ complaint.confidence_score|default:complaint.ai_confidence }}%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden border border-slate-200/60 shadow-2xs">
+                                <div class="bg-gradient-to-r from-emerald-400 to-emerald-500 h-full rounded-full confidence-bar-val" style="width: 0%;"></div>
+                            </div>
+                            <p class="text-[10px] text-slate-400 leading-normal">
+                                AI confidence in analysis.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Need Help Card -->
+                <div class="bg-indigo-50/20 border border-indigo-100 rounded-3xl p-6 shadow-xs space-y-4">
+                    <h3 class="text-base font-bold text-indigo-950 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        Need Help?
+                    </h3>
+                    <p class="text-xs text-indigo-900 leading-relaxed">
+                        If you have any issues or want to add more information to your complaint, you can contact support.
+                    </p>
+                    <button class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition rounded-xl shadow-sm">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        Contact Support
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for full size image preview -->
+{% if complaint.image %}
+<div id="imageModal" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md" onclick="closeImageModal()">
+    <div class="relative bg-white rounded-3xl p-2 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden" onclick="event.stopPropagation()">
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 z-10 p-2 bg-slate-100/80 hover:bg-slate-200 text-slate-700 rounded-full transition">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <div class="overflow-auto flex items-center justify-center max-h-[85vh]">
+            <img src="{{ complaint.image.url }}" alt="Full Complaint Media" class="w-full h-auto object-contain rounded-2xl">
+        </div>
+    </div>
+</div>
+
+<script>
+    function openImageModal() {
+        const modal = document.getElementById('imageModal');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+        }, 10);
+    }
+    
+    function closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+</script>
+{% endif %}
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie("csrftoken");
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Handle confidence formatting (ranges 0-1 or 0-100)
+        let confidenceVal = parseFloat("{{ complaint.confidence_score|default:complaint.ai_confidence|default:0 }}");
+        if (confidenceVal > 0 && confidenceVal <= 1) {
+            confidenceVal = confidenceVal * 100;
+        }
+        
+        // Update confidence texts
+        const confTexts = document.querySelectorAll(".confidence-text-val");
+        confTexts.forEach(el => {
+            el.textContent = confidenceVal.toFixed(1) + "%";
+        });
+        
+        // Update confidence progress bar widths
+        const confBars = document.querySelectorAll(".confidence-bar-val");
+        confBars.forEach(el => {
+            el.style.width = confidenceVal + "%";
+        });
+
+        // AJAX Comments Submission Handler
+        document.querySelectorAll(".comment-form").forEach(form => {
+            form.addEventListener("submit", async function(e){
+                e.preventDefault();
+                const complaintId = form.dataset.complaintId;
+                const textarea = form.querySelector(".comment-input");
+                const comment = textarea.value.trim();
+                if(comment === "") return;
+
+                const formData = new FormData();
+                formData.append("comment", comment);
+
+                try {
+                    const response = await fetch(
+                        `/complaints/${complaintId}/comment/`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "X-CSRFToken": csrftoken
+                            },
+                            body: formData
+                        }
+                    );
+
+                    const data = await response.json();
+                    if(data.status !== "success") return;
+
+                    const container = form.nextElementSibling;
+                    const div = document.createElement("div");
+                    div.className = "comment-card";
+                    div.innerHTML = `
+                        <div class="flex items-center justify-between border-b border-slate-100/50 pb-1.5 mb-1.5">
+                            <h5 class="flex items-center gap-1.5">
+                                <span class="h-5 w-5 rounded bg-indigo-650 text-white flex items-center justify-center text-[10px] font-bold">
+                                    ${data.username.slice(0, 1).toUpperCase()}
+                                </span>
+                                ${data.username}
+                            </h5>
+                            <small>Just now</small>
+                        </div>
+                        <p>${data.comment}</p>
+                    `;
+                    container.prepend(div);
+
+                    // Update comments count text
+                    const countBadge = document.querySelector(".comment-count");
+                    if (countBadge) {
+                        const currentCount = parseInt(countBadge.innerText) || 0;
+                        countBadge.innerText = currentCount + 1;
+                    }
+
+                    textarea.value = "";
+                    
+                    const noComments = container.querySelector(".no-comments");
+                    if (noComments) noComments.classList.add("hidden");
+                }
+                catch(err) {
+                    console.error(err);
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

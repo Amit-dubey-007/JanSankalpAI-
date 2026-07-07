@@ -1,0 +1,765 @@
+{% extends "complaints/base.html" %}
+{% load static %}
+
+{% block title %}Government Dashboard - JanSankalpAI{% endblock %}
+
+{% block content %}
+<div class="bg-slate-50 min-h-screen">
+    <div class="flex">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 border-r border-slate-200 bg-white min-h-[calc(100vh-64px)] hidden lg:flex flex-col justify-between py-6 shrink-0">
+            <div class="px-4 space-y-6">
+                <div>
+                    <h3 class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Main Menu</h3>
+                    <nav class="mt-3 space-y-1">
+                        <a href="{% url 'complaints:govt_dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-bold transition-all">
+                            <i data-lucide="layout-dashboard" class="w-4.5 h-4.5"></i>
+                            Grievance Console
+                        </a>
+                        <a href="{% url 'complaints:manage_officials' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-bold transition-all">
+                            
+                            🧑🏼‍💼 Manage Govt Officials
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="px-4 text-center">
+                <p class="text-[10px] text-slate-400">JanSankalpAI Gov Portal &copy; 2026</p>
+            </div>
+        </aside>
+
+        <!-- Page Content Area -->
+        <main class="flex-grow p-4 sm:p-6 lg:p-8 overflow-x-hidden space-y-8 max-w-7xl mx-auto w-full">
+            <!-- Breadcrumbs -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                    <a href="{% url 'complaints:govt_dashboard' %}" class="hover:text-indigo-600 transition-colors">Admin Console</a>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+                    <span class="text-slate-700">Grievance Dashboard</span>
+                </div>
+                
+            </div>
+
+            <!-- Header Grid: Intro & Add Officer Card -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Portal Intro Banner -->
+                <div class="lg:col-span-2 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-lg border border-slate-800 flex flex-col justify-center">
+                    <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f293715_1px,transparent_1px),linear-gradient(to_bottom,#1f293715_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+                    <div class="relative space-y-3">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 text-xs font-bold uppercase tracking-wider w-fit">
+                            🏛️ Officer Control Desk
+                        </span>
+                        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight">
+                            AI-Powered Grievance Redressal
+                        </h1>
+                        <p class="text-sm text-slate-300 leading-relaxed font-medium max-w-xl">
+                            Welcome, Officer. Monitor verified citizens' complaints, execute administrative routing, track SLA warnings, and finalize resolutions with uploaded field evidence.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Add Government Officer Card (Always Visible Button) -->
+                <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md shadow-slate-100/50 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2 mb-2">
+                            <i data-lucide="user-plus" class="w-4.5 h-4.5 text-indigo-600"></i>
+                            Add Government Officer
+                        </h3>
+                        <p class="text-xs text-slate-500 mb-4">Register a new official account to access this administrative portal.</p>
+                    </div>
+                    <form method="POST" action="" class="space-y-3">
+                        {% csrf_token %}
+                        <div class="relative">
+                            <i data-lucide="user" class="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input type="text" name="username" required placeholder="Username" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all">
+                        </div>
+                        <button type="submit" class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-750 py-2.5 text-xs font-bold text-white shadow-md transition-all flex items-center justify-center gap-1 cursor-pointer">
+                            <span>Add Officer</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Total Complaints -->
+                <div class="bg-white rounded-2xl p-6 shadow-xl shadow-slate-100/30 border border-slate-200/60 hover:-translate-y-1 transition-all duration-300 flex items-center justify-between group">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Complaints</span>
+                        <h3 class="text-3xl font-extrabold text-slate-800 mt-1">{{ total_complaints|default:"0" }}</h3>
+                        <span class="text-[10px] text-slate-400 font-semibold block mt-1">Platform active complaints</span>
+                    </div>
+                    <div class="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                        <i data-lucide="folders" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <!-- Critical Complaints -->
+                <div class="bg-white rounded-2xl p-6 shadow-xl shadow-slate-100/30 border border-slate-200/60 hover:-translate-y-1 transition-all duration-300 flex items-center justify-between group">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Critical Alerts</span>
+                        <h3 class="text-3xl font-extrabold text-rose-600 mt-1">{{ critical_complaints|default:"0" }}</h3>
+                        <span class="text-[10px] text-rose-600 font-semibold block mt-1">High priority escalations</span>
+                    </div>
+                    <div class="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 group-hover:bg-rose-50 group-hover:text-rose-600 transition-colors">
+                        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <!-- Pending Complaints -->
+                <div class="bg-white rounded-2xl p-6 shadow-xl shadow-slate-100/30 border border-slate-200/60 hover:-translate-y-1 transition-all duration-300 flex items-center justify-between group">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pending Review</span>
+                        <h3 class="text-3xl font-extrabold text-amber-600 mt-1">{{ pending_complaints|default:"0" }}</h3>
+                        <span class="text-[10px] text-amber-600 font-semibold block mt-1">Awaiting status change</span>
+                    </div>
+                    <div class="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 group-hover:bg-amber-50 group-hover:text-amber-600 transition-colors">
+                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <!-- Resolved Complaints -->
+                <div class="bg-white rounded-2xl p-6 shadow-xl shadow-slate-100/30 border border-slate-200/60 hover:-translate-y-1 transition-all duration-300 flex items-center justify-between group">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Resolved Cases</span>
+                        <h3 class="text-3xl font-extrabold text-emerald-600 mt-1">{{ resolved_complaints|default:"0" }}</h3>
+                        <span class="text-[10px] text-emerald-600 font-semibold block mt-1">Successfully closed tickets</span>
+                    </div>
+                    <div class="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
+                        <i data-lucide="check-circle" class="w-6 h-6"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar Section (Search Button Always Visible) -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md shadow-slate-100/50">
+                <form method="GET" action="" class="flex flex-col sm:flex-row gap-3">
+                    <div class="flex-grow flex items-center gap-3 px-4 py-3 bg-slate-50 rounded-2xl border border-slate-200 focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-600 transition-all">
+                        <i data-lucide="search" class="h-5 w-5 text-indigo-500 shrink-0"></i>
+                        <input type="text" name="search" value="{{ request.GET.search|default:'' }}" placeholder="Search by title, location, department or category..." class="w-full bg-transparent border-none text-slate-800 placeholder-slate-400 focus:outline-none text-sm font-medium">
+                    </div>
+                    <button type="submit" class="rounded-2xl bg-indigo-600 hover:bg-indigo-750 px-8 py-3 text-sm font-bold text-white shadow-lg transition-all cursor-pointer">
+                        Search Portal
+                    </button>
+                </form>
+            </div>
+
+            <!-- Filters Section (Apply Filters Always Visible) -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md shadow-slate-100/50">
+                <h4 class="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="filter" class="w-4 h-4 text-slate-400"></i>
+                    Filter complaints
+                </h4>
+
+                <form method="GET" action="">
+                    {% if request.GET.search %}
+                        <input type="hidden" name="search" value="{{ request.GET.search }}">
+                    {% endif %}
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <!-- Category Dropdown -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Category</label>
+                            <select name="category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 text-slate-650 transition-all">
+                                <option value="">All Categories</option>
+                                <option value="Road Infrastructure" {% if request.GET.category == "Road Infrastructure" %}selected{% endif %}>Road Infrastructure</option>
+                                <option value="Water" {% if request.GET.category == "Water" %}selected{% endif %}>Water Supply</option>
+                                <option value="Electricity" {% if request.GET.category == "Electricity" %}selected{% endif %}>Electricity</option>
+                                <option value="Street Lighting" {% if request.GET.category == "Street Lighting" %}selected{% endif %}>Street Lighting</option>
+                                <option value="Healthcare" {% if request.GET.category == "Healthcare" %}selected{% endif %}>Healthcare</option>
+                                <option value="Education" {% if request.GET.category == "Education" %}selected{% endif %}>Education</option>
+                                <option value="Sanitation & Garbage" {% if request.GET.category == "Sanitation & Garbage" %}selected{% endif %}>Sanitation & Garbage</option>
+                                <option value="Environment" {% if request.GET.category == "Environment" %}selected{% endif %}>Environment</option>
+                                <option value="Public Transport" {% if request.GET.category == "Public Transport" %}selected{% endif %}>Public Transport</option>
+                                <option value="Public Safety" {% if request.GET.category == "Public Safety" %}selected{% endif %}>Public Safety</option>
+                                <option value="Government Services" {% if request.GET.category == "Government Services" %}selected{% endif %}>Government Services</option>
+                                <option value="Other" {% if request.GET.category == "Other" %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Severity Dropdown -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Severity</label>
+                            <select name="severity" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 text-slate-650 transition-all">
+                                <option value="">All Severities</option>
+                                <option value="Low" {% if request.GET.severity == "Low" %}selected{% endif %}>🟢 Low</option>
+                                <option value="Medium" {% if request.GET.severity == "Medium" %}selected{% endif %}>🔵 Medium</option>
+                                <option value="High" {% if request.GET.severity == "High" %}selected{% endif %}>🟠 High</option>
+                                <option value="Critical" {% if request.GET.severity == "Critical" %}selected{% endif %}>🔴 Critical</option>
+                            </select>
+                        </div>
+
+                        <!-- Status Dropdown -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Status</label>
+                            <select name="status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 text-slate-650 transition-all">
+                                <option value="">All Statuses</option>
+                                <option value="Pending" {% if request.GET.status == "Pending" %}selected{% endif %}>🕒 Pending</option>
+                                <option value="In Progress" {% if request.GET.status == "In Progress" %}selected{% endif %}>🛠️ In Progress</option>
+                                <option value="Resolved" {% if request.GET.status == "Resolved" %}selected{% endif %}>✅ Resolved</option>
+                                <option value="Rejected" {% if request.GET.status == "Rejected" %}selected{% endif %}>❌ Rejected</option>
+                            </select>
+                        </div>
+
+                        <!-- Sort Dropdown -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Sort By</label>
+                            <select name="sort" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                                <option value="recent" {% if request.GET.sort == "recent" %}selected{% endif %}>Most Recent</option>
+                                <option value="supported" {% if request.GET.sort == "supported" %}selected{% endif %}>Most Supported</option>
+                                <option value="severity" {% if request.GET.sort == "severity" %}selected{% endif %}>Highest Priority Score</option>
+                            </select>
+                        </div>
+
+                        <!-- Visibility Dropdown -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Visibility</label>
+                            <select name="visibility" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 text-slate-650 transition-all">
+                                <option value="">All (Anoymous+Govt Only Complaints)</option>
+                                <option value="GOVT ONLY" {% if request.GET.visibility == "Govt Only" %}selected{% endif %}>Govt Only Complaints</option>
+                                <option value="ANONYMOUS" {% if request.GET.visibility == "Anonymous" %}selected{% endif %}>Anonymous Complaints</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-end gap-3 mt-4 pt-4 border-t border-slate-100">
+                        <a href="{% url 'complaints:govt_dashboard' %}" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-250 text-slate-605 text-xs font-bold text-center transition-all flex items-center justify-center">
+                            Reset Filters
+                        </a>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-755 text-white text-xs font-bold transition-all cursor-pointer">
+                            Apply Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Trending Complaints Section -->
+            <div>
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Trending Complaints</h2>
+                        <p class="text-xs text-slate-500 mt-1">Most supported cases requiring rapid intervention.</p>
+                    </div>
+                    <span class="text-xs font-bold text-indigo-650 bg-indigo-50 border border-indigo-100 py-1.5 px-3 rounded-full flex items-center gap-1.5 shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Trending Now
+                    </span>
+                </div>
+
+                <!-- Horizontal scroll wrapper for trending cards -->
+                <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-indigo-400 scrollbar-track-slate-100 pb-4 custom-scrollbar">
+                    <div class="flex gap-6 w-max">
+                        {% for complaint in trending_complaints %}
+                        <a href="{% url 'complaints:govt_detail_complaint' complaint.id %}" class="flex-shrink-0 w-[420px] bg-gradient-to-tr from-white to-slate-50/50 border border-slate-200 rounded-2xl p-5 shadow-md flex gap-4 hover:shadow-lg hover:border-indigo-200 transition-all duration-300 group">
+                            <div class="w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-slate-100 border border-slate-200 relative">
+                                {% if complaint.image %}
+                                    <img src="{{ complaint.image.url }}" alt="Complaint Image" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                                {% else %}
+                                    <div class="absolute inset-0 bg-gradient-to-tr from-slate-200 to-indigo-50 flex items-center justify-center text-slate-400">
+                                        <i data-lucide="image" class="w-7 h-7"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="flex-grow flex flex-col justify-between min-w-0">
+                                <div>
+                                    <div class="flex items-center justify-between gap-2 mb-1.5">
+                                        <span class="text-[9px] font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-wider truncate max-w-[140px]">
+                                            {{ complaint.category }}
+                                        </span>
+                                        <span class="text-[9px] font-extrabold shrink-0">
+                                            {% if complaint.severity == "Critical" %}
+                                                <span class="text-rose-650 bg-rose-50 px-2 py-0.5 rounded">🔴 Critical</span>
+                                            {% elif complaint.severity == "High" %}
+                                                <span class="text-orange-655 bg-orange-50 px-2 py-0.5 rounded">🟠 High</span>
+                                            {% elif complaint.severity == "Medium" %}
+                                                <span class="text-blue-650 bg-blue-50 px-2 py-0.5 rounded">🔵 Medium</span>
+                                            {% else %}
+                                                <span class="text-emerald-650 bg-emerald-50 px-2 py-0.5 rounded">🟢 Low</span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <h3 class="text-sm font-bold text-slate-800 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                                        {{ complaint.title }}
+                                    </h3>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] text-slate-500 mt-3 pt-2 border-t border-slate-100/50">
+                                    <span>{{ complaint.district }}, {{ complaint.state }}</span>
+                                    <span class="font-extrabold text-indigo-600 flex items-center gap-0.5">
+                                        🔥 {{ complaint.supports.count|default:"0" }} supports
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="p-6 bg-slate-50/50 border border-slate-200 border-dashed rounded-2xl w-full text-center text-slate-400">
+                            <p class="text-xs font-bold uppercase tracking-wider">No trending complaints recorded this week</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department Summary -->
+            <div class="space-y-6">
+                <div>
+                    <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Department Summary</h2>
+                    <p class="text-xs text-slate-500 mt-1">Overview of caseload distribution by administrative body.</p>
+                </div>
+                <div class="overflow-x-auto no-scrollbar pb-2">
+
+                    <div class="flex gap-6 w-max">
+
+                        <div class="flex-shrink-0 w-72 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-28 group">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block truncate">
+                                Public Works Department
+                            </span>
+
+                            <div class="flex items-end justify-between mt-2">
+                                <span class="text-3xl font-black text-slate-800">
+                                    {{ pwd_count }}
+                                </span>
+
+                                <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                                    Complaints
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex-shrink-0 w-72 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-28 group">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block truncate">
+                                Municipal Corporation
+                            </span>
+
+                            <div class="flex items-end justify-between mt-2">
+                                <span class="text-3xl font-black text-slate-800">
+                                    {{ municipal_count }}
+                                </span>
+
+                                <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                                    Complaints
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex-shrink-0 w-72 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-28 group">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block truncate">
+                                Health Department
+                            </span>
+
+                            <div class="flex items-end justify-between mt-2">
+                                <span class="text-3xl font-black text-slate-800">
+                                    {{ health_count }}
+                                </span>
+
+                                <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                                    Complaints
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex-shrink-0 w-72 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-28 group">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block truncate">
+                                Education Department
+                            </span>
+
+                            <div class="flex items-end justify-between mt-2">
+                                <span class="text-3xl font-black text-slate-800">
+                                    {{ edu_count }}
+                                </span>
+
+                                <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                                    Complaints
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex-shrink-0 w-72 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-28 group">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block truncate">
+                                Water Department
+                            </span>
+
+                            <div class="flex items-end justify-between mt-2">
+                                <span class="text-3xl font-black text-slate-800">
+                                    {{ water_count }}
+                                </span>
+
+                                <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                                    Complaints
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex-shrink-0 w-72 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-28 group">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block truncate">
+                                Fire Department
+                            </span>
+
+                            <div class="flex items-end justify-between mt-2">
+                                <span class="text-3xl font-black text-slate-800">
+                                    {{ fire_count }}
+                                </span>
+
+                                <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                                    Complaints
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Add more department cards here -->
+
+                    </div>
+
+                </div>
+
+                <style>
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+
+                .no-scrollbar {
+                    scrollbar-width: none;
+                    -ms-overflow-style: none;
+                }
+                </style>
+            </div>
+
+            <!-- Complaint Grid Section -->
+            <div class="space-y-6">
+                <div>
+                    <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Grievances Database</h2>
+                    <p class="text-xs text-slate-500 mt-1">Review AI analysis outputs, status classifications, and execute work status modifications.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for complaint in page_obj %}
+                    <!-- Premium Complaint Card -->
+                    <div id="complaint-card-{{ complaint.id }}" class="bg-white rounded-3xl border border-slate-200/80 shadow-md shadow-slate-100/50 hover:-translate-y-1.5 hover:shadow-xl hover:border-slate-300 transition-all duration-300 flex flex-col h-full overflow-hidden group">
+                        
+                        <!-- Link wraps the card content to open details page on click -->
+                        <a href="{% url 'complaints:govt_detail_complaint' complaint.id %}" class="flex-grow flex flex-col">
+                            <!-- Image / Header -->
+                            <div class="h-44 w-full bg-slate-100 relative overflow-hidden shrink-0 border-b border-slate-100">
+                                {% if complaint.image %}
+                                    <img src="{{ complaint.image.url }}" alt="{{ complaint.title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                {% else %}
+                                    <div class="absolute inset-0 bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50/50 flex flex-col items-center justify-center text-slate-400 gap-1.5">
+                                        <i data-lucide="image" class="w-8 h-8 text-slate-300"></i>
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No Image Attached</span>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Category & Severity Overlay -->
+                                <div class="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none">
+                                    <span class="rounded-lg bg-white/90 backdrop-blur-sm px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-slate-700 shadow-sm border border-slate-200/50">
+                                        {{ complaint.category|default:"Constituency" }}
+                                    </span>
+                                    
+                                    <div class="flex gap-1.5">
+                                        {% if complaint.severity == "Critical" %}
+                                            <span class="rounded-lg bg-rose-500 text-white px-2 py-0.5 text-[9px] font-extrabold shadow-sm">Critical</span>
+                                        {% elif complaint.severity == "High" %}
+                                            <span class="rounded-lg bg-orange-500 text-white px-2 py-0.5 text-[9px] font-extrabold shadow-sm">High</span>
+                                        {% elif complaint.severity == "Medium" %}
+                                            <span class="rounded-lg bg-blue-500 text-white px-2 py-0.5 text-[9px] font-extrabold shadow-sm">Medium</span>
+                                        {% else %}
+                                            <span class="rounded-lg bg-slate-500 text-white px-2 py-0.5 text-[9px] font-extrabold shadow-sm">Low</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card Body -->
+                            <div class="p-5 flex-grow flex flex-col justify-between gap-4">
+                                <div class="space-y-3">
+                                    <!-- Department & Status -->
+                                    <div class="flex items-start justify-between mb-3">
+
+                                        <!-- Left -->
+                                        <div class="space-y-2">
+
+                                            <span class="inline-flex items-center gap-1 font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 py-1 px-3 rounded-lg text-xs">
+                                                🏢 {{ complaint.department|default:"Dept Pending" }}
+                                            </span>
+
+                                            {% if complaint.status == "Pending" %}
+
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-[11px] font-bold text-amber-700">
+                                                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                                Pending
+                                            </span>
+
+                                            {% elif complaint.status == "In Progress" %}
+
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-[11px] font-bold text-blue-700">
+                                                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                                                In Progress
+                                            </span>
+
+                                            {% elif complaint.status == "Resolved" %}
+
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-bold text-emerald-700">
+                                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                                Resolved
+                                            </span>
+
+                                            {% elif complaint.status == "Rejected" %}
+
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 border border-rose-200 px-3 py-1 text-[11px] font-bold text-rose-700">
+                                                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                                                Rejected
+                                            </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                        <!-- Right -->
+                                        <div>
+
+                                            {% if complaint.analysis_status == "Completed" %}
+
+                                            <span class="flex items-center gap-1 font-bold text-emerald-600 uppercase tracking-wider text-[10px]">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                AI Verified
+                                            </span>
+
+                                            {% elif complaint.analysis_status == "Processing" %}
+
+                                            <span class="flex items-center gap-1 font-bold text-amber-600 uppercase tracking-wider text-[10px] animate-pulse">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                                AI Processing
+                                            </span>
+
+                                            {% else %}
+
+                                            <span class="flex items-center gap-1 font-bold text-slate-500 uppercase tracking-wider text-[10px]">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                                Submitted
+                                            </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                    <!-- Title -->
+                                    <h3 class="text-sm font-extrabold text-slate-800 line-clamp-1 group-hover:text-indigo-650 transition-colors flex items-center gap-1">
+                                        <span class="title-prefix-container"></span>
+                                        <span class="complaint-title-text">{{ complaint.title }}</span>
+                                    </h3>
+
+                                    <!-- AI Summary Callout -->
+                                    <p class="text-[11px] text-slate-500/90 leading-relaxed line-clamp-2 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100/80">
+                                        🤖 AI: {{ complaint.ai_summary|default:"Analyzing report parameters to compile executive brief. Standby..." }}
+                                    </p>
+                                </div>
+
+                                <!-- Metadata -->
+                                <div class="border-t border-slate-100 pt-3 flex justify-between items-center text-[10px] text-slate-400 font-semibold">
+                                    <span class="flex items-center gap-0.5 truncate max-w-[140px]">
+                                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                                        {{ complaint.district|default:"Delhi" }}, {{ complaint.state|default:"Delhi" }}
+                                    </span>
+                                    <div class="flex gap-3 text-right">
+                                        <span class="text-slate-450">Score: <strong class="text-indigo-600 font-bold">{{ complaint.priority_score|default:"--" }}</strong></span>
+                                        <span>{{ complaint.created_at|timesince|default:"2 hours" }} ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Footer Action Buttons (Run client-side JS validation with are you sure) -->
+                        <div class="border-t border-slate-100 bg-slate-50/50 p-4 grid grid-cols-3 gap-2 shrink-0">
+                            <!-- In Progress Button -->
+                            <button type="button" onclick="triggerStatusUpdate('{{ complaint.id }}', 'In Progress')" class="w-full text-center rounded-xl bg-white border border-slate-200 py-2 text-[10px] font-extrabold text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer">
+                                In Progress
+                            </button>
+                            
+                            <!-- Resolved Button -->
+                            <button type="button" onclick="triggerStatusUpdate('{{ complaint.id }}', 'Resolved')" class="w-full text-center rounded-xl bg-white border border-slate-200 py-2 text-[10px] font-extrabold text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 transition-all cursor-pointer">
+                                Resolved
+                            </button>
+
+                            <!-- Reject Button -->
+                            <button type="button" onclick="triggerStatusUpdate('{{ complaint.id }}', 'Rejected')" class="w-full text-center rounded-xl bg-white border border-slate-200 py-2 text-[10px] font-extrabold text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-all cursor-pointer">
+                                Reject
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="md:col-span-2 lg:col-span-3 text-center py-16 bg-white rounded-3xl border border-slate-200/80 shadow-md">
+                        <div class="max-w-xs mx-auto space-y-3">
+                            <div class="h-12 w-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto text-slate-400">
+                                <i data-lucide="inbox" class="w-6 h-6"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-800">No Grievances Found</h4>
+                            <p class="text-xs text-slate-500">We couldn't find any complaints registered on the database matching your queries.</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="mt-8 flex flex-col items-center gap-4">
+                <nav class="flex items-center gap-1.5">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1{% if query_params %}&{{ query_params }}{% endif %}" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition shadow-sm">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition shadow-sm">Prev</a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if num == page_obj.number %}
+                            <span class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-extrabold text-xs shadow-md">{{ num }}</span>
+                        {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                            <a href="?page={{ num }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-305 transition shadow-sm">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition shadow-sm">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition shadow-sm">Last</a>
+                    {% endif %}
+                </nav>
+                <div class="text-[11px] text-slate-450 font-bold">
+                    Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </div>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+
+<!-- Crystal Clear General Confirmation Dialog Box (Always visible solid text white bg dialog overlays) -->
+<div id="general-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <!-- Backdrop (Semi-transparent dark grey, solid overlay effect) -->
+    <div class="fixed inset-0 bg-slate-900/60 transition-opacity" id="general-modal-backdrop"></div>
+    
+    <!-- Modal Dialog Box Container (Solid white backdrop, clear visual visibility) -->
+    <div class="relative bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all max-w-md w-full border border-slate-200 z-10">
+        <div class="bg-white p-6 sm:p-8">
+            <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600" id="general-modal-icon-wrapper">
+                    <i data-lucide="help-circle" class="w-6 h-6"></i>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="text-base font-extrabold text-slate-900" id="general-modal-title">Are you sure?</h3>
+                    <p class="text-xs font-semibold leading-relaxed text-slate-500" id="general-modal-desc">
+                        Are you sure you want to transition this complaint state? This action will update the official platform records.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100">
+            <button type="button" id="general-modal-cancel" class="px-5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-105 transition shadow-sm cursor-pointer">
+                Cancel
+            </button>
+            <button type="button" id="general-modal-confirm" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white shadow-md transition cursor-pointer">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Lucide Icons and Interactivity Scripts -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Dialog centering support
+    const generalModal = document.getElementById('general-confirm-modal');
+    const generalModalTitle = document.getElementById('general-modal-title');
+    const generalModalDesc = document.getElementById('general-modal-desc');
+    const generalModalCancel = document.getElementById('general-modal-cancel');
+    const generalModalConfirm = document.getElementById('general-modal-confirm');
+    const generalModalBackdrop = document.getElementById('general-modal-backdrop');
+    const generalIconWrapper = document.getElementById('general-modal-icon-wrapper');
+
+    let currentUpdateParams = null;
+
+    function triggerStatusUpdate(complaintId, nextStatus) {
+        currentUpdateParams = { id: complaintId, status: nextStatus };
+        
+        generalModalTitle.innerText = "Are you sure?";
+        if (nextStatus === 'In Progress') {
+            generalModalDesc.innerText = "Are you sure you want to transition this complaint to 'In Progress'? This will notify the citizen that a repair crew is working at the site.";
+            generalIconWrapper.className = "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600";
+            generalIconWrapper.innerHTML = '<i data-lucide="refresh-cw" class="w-6 h-6 animate-spin"></i>';
+        } else if (nextStatus === 'Resolved') {
+            generalModalDesc.innerText = "Are you sure you want to resolve this complaint? This marks the issue as resolved and archives it.";
+            generalIconWrapper.className = "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600";
+            generalIconWrapper.innerHTML = '<i data-lucide="check-circle" class="w-6 h-6"></i>';
+        } else if (nextStatus === 'Rejected') {
+            generalModalDesc.innerText = "Are you sure you want to reject this complaint? This will close the grievance as rejected.";
+            generalIconWrapper.className = "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-600";
+            generalIconWrapper.innerHTML = '<i data-lucide="alert-triangle" class="w-6 h-6"></i>';
+        }
+
+        generalModal.classList.remove('hidden');
+        lucide.createIcons();
+    }
+
+    function closeGeneralModal() {
+        generalModal.classList.add('hidden');
+        currentUpdateParams = null;
+    }
+
+    if (generalModalCancel) generalModalCancel.addEventListener('click', closeGeneralModal);
+    if (generalModalBackdrop) generalModalBackdrop.addEventListener('click', closeGeneralModal);
+    if (generalModalConfirm) {
+
+        generalModalConfirm.addEventListener("click", async () => {
+
+            if (!currentUpdateParams) return;
+
+            const csrfToken =
+                document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+            try {
+
+                const response = await fetch(
+                    `/complaint/${currentUpdateParams.id}/change-status/`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrfToken
+                        },
+
+                        body: JSON.stringify({
+                            status: currentUpdateParams.status
+                        })
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    alert(data.message);
+                    return;
+                }
+
+                closeGeneralModal();
+
+                location.reload();
+
+            }
+
+            catch(err){
+
+                console.error(err);
+
+                alert("Unable to update complaint.");
+
+            }
+
+        });
+
+    }
+
+</script>
+{% endblock %}

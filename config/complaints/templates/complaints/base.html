@@ -1,0 +1,434 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}JanSankalpAI - AI-Powered Citizen Grievance Platform{% endblock %}</title>
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-full text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
+    <!-- Sticky Modern Header -->
+    <header class="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md">
+        <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <!-- Left Side: Brand Logo -->
+            <div class="flex items-center gap-8">
+                <a href="{% url 'complaints:public_dashboard' %}" class="flex items-center gap-2 group">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-200 transition-transform group-hover:scale-105">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-indigo-950 bg-clip-text text-transparent">
+                        JanSankalp<span class="text-indigo-600">AI</span>
+                    </span>
+                </a>
+
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="{% url 'complaints:public_dashboard' %}" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
+                        Public Hub
+                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'complaints:mycomplaints' %}" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
+                            My Grievances
+                        </a>
+                        <a href="{% url 'complaints:create_complaint' %}" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
+                            File Complaint
+                        </a>
+                    {% endif %}
+                    {% if user.profile.role == "Government" or user.is_superuser %}
+                    <a href="{% url 'complaints:govt_dashboard' %}" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-1.5">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Gov Panel
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Language Selector Dropdown -->
+                    <div class="relative inline-block text-left" id="language-selector-container">
+                        <div>
+                            <button type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-655 shadow-sm hover:bg-slate-50 transition-all cursor-pointer focus:outline-none" id="language-dropdown-btn" aria-expanded="false" aria-haspopup="true">
+                                <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253m0 0A17.919 17.919 0 0012 12.5c3.162 0 6.133.815 8.716 2.247" />
+                                </svg>
+                                <span id="selected-lang-label">English</span>
+                                <svg class="-mr-1 h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="absolute right-0 z-50 mt-2 w-36 origin-top-right rounded-xl bg-white border border-slate-200 shadow-lg ring-1 ring-black/5 focus:outline-none hidden" id="language-dropdown-menu" role="menu" aria-orientation="vertical" aria-labelledby="language-dropdown-btn" tabindex="-1">
+                            <div class="py-1 max-h-60 overflow-y-auto" role="none" style="scrollbar-width: thin;">
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('en', 'English')">English</button>
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('hi', 'हिन्दी')">हिन्दी</button>
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('mr', 'मराठी')">मराठी</button>
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('gu', 'ગુજરાતી')">ગુજરાતી</button>
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('bn', 'বাংলা')">বাংলা</button>
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('ta', 'தமிழ்')">தமிழ்</button>
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('te', 'తెలుగు')">తెలుగు</button>
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('kn', 'ಕನ್ನಡ')">ಕನ್ನಡ</button>
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('ml', 'മലയാളം')">മലയാളം</button>
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('pa', 'ਪੰਜਾਬੀ')">ਪੰਜਾਬੀ</button>
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('or', 'ଓଡ଼ିଆ')">ଓଡ଼ିଆ</button>
+                                <button type="button" class="w-full text-left px-4 py-2 text-xs text-slate-705 hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold cursor-pointer" role="menuitem" onclick="setLanguage('as', 'অসমীয়া')">অসমীয়া</button>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+            <!-- Right Side: User Controls & Mobile Toggle -->
+            <div class="flex items-center gap-4">
+                <!-- Notifications Bell Icon -->
+                <a href="{% url 'complaints:notifications' %}" class="relative rounded-full p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all" aria-label="View notifications">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <span class="absolute top-1.5 right-1.5 flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
+                    </span>
+                </a>
+
+                <!-- User Session Actions -->
+                <div class="hidden sm:flex sm:items-center sm:gap-4">
+                    {% if user.is_authenticated %}
+                        <!-- User Dropdown Placeholder -->
+                        <div class="relative flex items-center gap-3 pl-3 border-l border-slate-200">
+                            <div class="flex flex-col text-right">
+                                <span class="text-xs font-semibold text-slate-400">Authenticated</span>
+                                <span class="text-sm font-bold text-slate-700">{{ user.username }}</span>
+                            </div>
+                            <div class="h-9 w-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold ring-2 ring-indigo-50 hover:ring-indigo-100 transition-all cursor-pointer">
+                                {{ user.username|slice:":1"|upper }}
+                            </div>
+                            <a href="{% url 'accounts:logout' %}" class="rounded-lg px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-all">
+                                Logout
+                            </a>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="text-sm font-semibold text-slate-700 hover:text-indigo-600 transition-colors">
+                            Sign In
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-md shadow-indigo-200 hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-300 transition-all">
+                            Join JanSankalp
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button type="button" class="inline-flex items-center justify-center rounded-xl p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 md:hidden" aria-controls="mobile-menu" aria-expanded="false" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                    <span class="sr-only">Open main menu</span>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu (Dynamic / Toggleable) -->
+        <div class="hidden md:hidden border-t border-slate-200 bg-white" id="mobile-menu">
+            <div class="space-y-1 px-4 py-3">
+                <a href="" class="block rounded-lg px-3 py-2 text-base font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-600">
+                    Public Hub
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'complaints:mycomplaints' %}" class="block rounded-lg px-3 py-2 text-base font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-600">
+                        My Grievances
+                    </a>
+                    <a href="{% url 'complaints:create_complaint' %}" class="block rounded-lg px-3 py-2 text-base font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-600">
+                        File Complaint
+                    </a>
+                {% endif %}
+                <a href="#government-dashboard" class="block rounded-lg px-3 py-2 text-base font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-600">
+                    Gov Panel
+                </a>
+                <div class="border-t border-slate-100 my-2 pt-2">
+                    {% if user.is_authenticated %}
+                        <div class="flex items-center justify-between px-3 py-2">
+                            <span class="text-sm font-bold text-slate-700">{{ user.username }}</span>
+                            <a href="{% url 'accounts:logout' %}" class="text-sm font-bold text-rose-600">
+                                Logout
+                            </a>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="block rounded-lg px-3 py-2 text-base font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-600">
+                            Sign In
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="mt-2 block w-full text-center rounded-xl bg-indigo-600 py-2.5 text-base font-bold text-white shadow-md">
+                            Join JanSankalp
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Alert Messages (Dynamic Toast Style) -->
+    {% if messages %}
+    <div class="fixed top-20 right-4 z-50 flex flex-col gap-3 max-w-md w-full px-4 sm:px-0">
+        {% for message in messages %}
+        <div class="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-white p-4 shadow-xl shadow-slate-100 animate-slide-in transition-all" role="alert">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-slate-800">{{ message }}</p>
+            </div>
+            <button type="button" class="text-slate-400 hover:text-slate-600 transition-colors" onclick="this.parentElement.remove()">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        {% block content %}
+        <!-- Content will be injected here -->
+        {% endblock %}
+    </main>
+
+    <!-- Professional Modern Footer -->
+    <footer class="border-t border-slate-200 bg-slate-900 text-slate-400">
+        <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+            <div class="xl:grid xl:grid-cols-3 xl:gap-8">
+                <!-- Branding and Mission -->
+                <div class="space-y-6">
+                    <a href="{% url 'complaints:public_dashboard' %}" class="flex items-center gap-2">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold">
+                            J
+                        </div>
+                        <span class="text-lg font-bold tracking-tight text-white">
+                            JanSankalp<span class="text-indigo-400">AI</span>
+                        </span>
+                    </a>
+                    <p class="text-sm text-slate-400 max-w-xs leading-relaxed">
+                        Empowering citizens with AI-driven grievance classification, smart department assignment, and transparent resolution workflows.
+                    </p>
+                    <div class="flex space-x-4">
+                        <!-- <a href="#twitter" class="hover:text-white transition-colors" aria-label="Twitter">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        </a> -->
+                        <a href="https://github.com/Amit-dubey-007" class="hover:text-white transition-colors" aria-label="GitHub">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/></svg>
+                        </a>
+                        <a href="https://www.linkedin.com/in/amit-dubey-613355371/" class="hover:text-white transition-colors" aria-label="LinkedIn">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Footer Navigation -->
+                <div class="mt-8 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
+                    <div class="md:grid md:grid-cols-2 md:gap-8">
+                        <div>
+                            <h3 class="text-sm font-semibold tracking-wider text-slate-200 uppercase">Platform</h3>
+                            <ul class="mt-4 space-y-2">
+                                <li><a href="{% url 'complaints:public_dashboard' %}" class="text-sm hover:text-white transition-colors">Public Hub</a></li>
+                                <li><a href="{% url 'complaints:create_complaint' %}" class="text-sm hover:text-white transition-colors">File Grievance</a></li>
+                                <li><a href="#government-dashboard" class="text-sm hover:text-white transition-colors">Officer Console</a></li>
+                                <li><a href="{% url 'complaints:notifications' %}" class="text-sm hover:text-white transition-colors">Alerts Inbox</a></li>
+                            </ul>
+                        </div>
+                        <div class="mt-12 md:mt-0">
+                            <h3 class="text-sm font-semibold tracking-wider text-slate-200 uppercase">Resources</h3>
+                            <ul class="mt-4 space-y-2">
+                                <li><a href="{% url 'complaints:faq' %}" class="text-sm hover:text-white transition-colors">Citizen FAQ</a></li>
+                                <li><a href="{% url 'complaints:guidelines' %}" class="text-sm hover:text-white transition-colors">Filing Guidelines</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="md:grid md:grid-cols-2 md:gap-8">
+                        <div>
+                            <h3 class="text-sm font-semibold tracking-wider text-slate-200 uppercase">Company</h3>
+                            <ul class="mt-4 space-y-2">
+                                <li><a href="{% url 'complaints:about' %}" class="text-sm hover:text-white transition-colors">About Us</a></li>
+                                <li><a href="{% url 'complaints:contact' %}" class="text-sm hover:text-white transition-colors">Contact Support</a></li>
+                            </ul>
+                        </div>
+                        <!-- <div class="mt-12 md:mt-0">
+                            <h3 class="text-sm font-semibold tracking-wider text-slate-200 uppercase">Legal</h3>
+                            <ul class="mt-4 space-y-2">
+                                <li><a href="#privacy" class="text-sm hover:text-white transition-colors">Privacy Policy</a></li>
+                                <li><a href="#terms" class="text-sm hover:text-white transition-colors">Terms of Service</a></li>
+                                
+                            </ul>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Line -->
+            <div class="mt-12 border-t border-slate-800 pt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <p class="text-xs text-slate-500">
+                    &copy; {% now "Y" %} JanSankalpAI. Project developed under government transparency initiative.
+                </p>
+                <p class="text-xs text-slate-500 flex items-center gap-1">
+                    Powered by <span class="font-semibold text-slate-400">Gemini LLM</span> &amp; <span class="font-semibold text-indigo-400">Tailwind CSS</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+    <!-- Language Selection JS Logic -->
+    <!--
+        TRANSLATION APPROACH: Google Translate Cookie Method
+        =====================================================
+        We set the `googtrans` cookie to "/en/{langCode}" and reload the page.
+        Google Translate's script reads this cookie on page load and translates
+        the entire page automatically. This is the correct programmatic approach.
+
+        To replace with Django i18n later:
+        - Change applyLanguage() to redirect to /{langCode}{current_path}
+        - No UI changes needed.
+    -->
+    <script>
+        (function() {
+            const dropdownBtn = document.getElementById('language-dropdown-btn');
+            const dropdownMenu = document.getElementById('language-dropdown-menu');
+            const selectedLangLabel = document.getElementById('selected-lang-label');
+
+            const languagesMap = {
+                'en': 'English',
+                'hi': 'हिन्दी',
+                'mr': 'मराठी',
+                'gu': 'ગુજરાતી',
+                'bn': 'বাংলা',
+                'ta': 'தமிழ்',
+                'te': 'తెలుగు',
+                'kn': 'ಕನ್ನಡ',
+                'ml': 'മലയാളം',
+                'pa': 'ਪੰਜਾਬੀ',
+                'or': 'ଓଡ଼ିଆ',
+                'as': 'অসমীয়া'
+            };
+
+            // ── Dropdown open/close toggle ──
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isExpanded = dropdownBtn.getAttribute('aria-expanded') === 'true';
+                    dropdownBtn.setAttribute('aria-expanded', !isExpanded);
+                    dropdownMenu.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', function() {
+                    dropdownBtn.setAttribute('aria-expanded', 'false');
+                    dropdownMenu.classList.add('hidden');
+                });
+            }
+
+            // ── Cookie helpers ──
+            function setGoogTransCookie(langCode) {
+                var cookieVal = langCode === 'en' ? '' : '/en/' + langCode;
+                var expires = langCode === 'en'
+                    ? 'expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+                    : 'expires=Fri, 31 Dec 9999 23:59:59 UTC;';
+                // Set on root path so it applies to all pages
+                document.cookie = 'googtrans=' + cookieVal + '; ' + expires + ' path=/';
+                // Also set for the full domain path that Google Translate checks
+                document.cookie = 'googtrans=' + cookieVal + '; ' + expires + ' path=/' + '; domain=' + location.hostname;
+            }
+
+            /**
+             * applyLanguage(langCode)
+             * ─────────────────────────
+             * Sets the Google Translate cookie to the chosen language and reloads
+             * the page so Google Translate can apply the full translation on load.
+             *
+             * For English: clears the cookie and reloads to restore original text.
+             *
+             * Modular design: to switch to Django i18n, replace this function body
+             * with: window.location.href = '/' + langCode + window.location.pathname;
+             * — no UI changes required.
+             */
+            window.applyLanguage = function(langCode) {
+                setGoogTransCookie(langCode);
+                window.location.reload();
+            };
+
+            // ── Called by each language button in the dropdown ──
+            window.setLanguage = function(langCode, langName) {
+                localStorage.setItem('selected_language', langCode);
+                // Close dropdown before reload
+                if (dropdownMenu) dropdownMenu.classList.add('hidden');
+                if (dropdownBtn) dropdownBtn.setAttribute('aria-expanded', 'false');
+                applyLanguage(langCode);
+            };
+
+            // ── Restore saved language label in dropdown button ──
+            const savedLang = localStorage.getItem('selected_language') || 'en';
+            if (selectedLangLabel && languagesMap[savedLang]) {
+                selectedLangLabel.innerText = languagesMap[savedLang];
+            }
+
+            // ── On page load: ensure cookie matches localStorage ──
+            // This syncs the cookie for the current session if it was cleared
+            // (e.g., browser cleared cookies but localStorage persisted).
+            if (savedLang !== 'en') {
+                setGoogTransCookie(savedLang);
+            }
+
+            // ── Load Google Translate script ──
+            // The script reads the `googtrans` cookie automatically on load
+            // and translates the page — no widget interaction needed.
+            var gtScript = document.createElement('script');
+            gtScript.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+            gtScript.async = true;
+            document.body.appendChild(gtScript);
+
+            // Minimal init callback — we don't use the widget UI at all.
+            window.googleTranslateElementInit = function() {
+                new google.translate.TranslateElement({
+                    pageLanguage: 'en',
+                    includedLanguages: 'en,hi,mr,gu,bn,ta,te,kn,ml,pa,or,as',
+                    autoDisplay: false
+                }, 'google_translate_element');
+            };
+
+            // Hidden container required by Google Translate's init
+            var gtDiv = document.createElement('div');
+            gtDiv.id = 'google_translate_element';
+            gtDiv.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;';
+            document.body.appendChild(gtDiv);
+
+            // ── Suppress Google Translate's own UI chrome ──
+            // We use our custom dropdown; hide all GT visual elements.
+            // NOTE: We do NOT override `body { top }` — that would block GT from
+            // applying translations (GT shifts body.top to show its banner).
+            var hideGTStyles = document.createElement('style');
+            hideGTStyles.textContent = [
+                '.goog-te-banner-frame { display: none !important; }',
+                '#goog-gt-tt { display: none !important; }',
+                '.goog-te-balloon-frame { display: none !important; }',
+                '.goog-tooltip { display: none !important; }',
+                '.goog-tooltip:hover { display: none !important; }',
+                '.goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }',
+                '#google_translate_element { display: none !important; }',
+                '.skiptranslate { display: none !important; }',
+                /* Allow GT to offset body (needed for translation to render),
+                   but compensate so layout doesn't jump */
+                'body.translated-ltr, body.translated-rtl { top: 0 !important; }'
+            ].join('\n');
+            document.head.appendChild(hideGTStyles);
+
+        })();
+    </script>
+</body>
+</html>

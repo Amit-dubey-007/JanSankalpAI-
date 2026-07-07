@@ -1,0 +1,827 @@
+{% extends "complaints/base.html" %}
+{% load static %}
+
+{% block title %}Complaint Redressal Detail - JanSankalpAI{% endblock %}
+
+{% block content %}
+<div class="bg-slate-50 min-h-screen">
+    <div class="flex">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 border-r border-slate-200 bg-white min-h-[calc(100vh-64px)] hidden lg:flex flex-col justify-between py-6 shrink-0">
+            <div class="px-4 space-y-6">
+                <div>
+                    <h3 class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Main Menu</h3>
+                    <nav class="mt-3 space-y-1">
+                        <a href="{% url 'complaints:govt_dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-bold transition-all">
+                            <i data-lucide="layout-dashboard" class="w-4.5 h-4.5"></i>
+                            Grievance Console
+                        </a>
+                        <a href="{% url 'complaints:manage_officials' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-bold transition-all">
+                            
+                            🧑🏼‍💼 Manage Govt Officials
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="px-4 text-center">
+                <p class="text-[10px] text-slate-400">JanSankalpAI Gov Portal &copy; 2026</p>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="flex-grow p-4 sm:p-6 lg:p-8 overflow-x-hidden max-w-7xl mx-auto space-y-6 w-full">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                    <a href="{% url 'complaints:govt_dashboard' %}" class="hover:text-indigo-600 transition-colors">Admin Console</a>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+                    <a href="{% url 'complaints:govt_dashboard' %}" class="hover:text-indigo-600 transition-colors">Grievance Dashboard</a>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+                    <span class="text-slate-700">Complaint #{{ complaint.id }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{% url 'complaints:govt_dashboard' %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-650 bg-indigo-50 px-3.5 py-2 rounded-xl hover:bg-indigo-100 transition-all shadow-sm">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Complaint Heading Header -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md shadow-slate-100/50 space-y-5">
+                <div class="space-y-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-xs font-extrabold text-indigo-755 bg-indigo-50 px-2.5 py-0.5 rounded tracking-wider">ID: {{ complaint.id }}</span>
+                        
+                        <!-- Status Chip -->
+                        <span id="detail-status-chip" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border">
+                            {% if complaint.status == "Resolved" %}
+                                <span class="status-dot w-1.5 h-1.5 rounded-full bg-emerald-500"></span> <span class="status-label text-emerald-700">Resolved</span>
+                            {% elif complaint.status == "In Progress" %}
+                                <span class="status-dot w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span> <span class="status-label text-blue-700">In Progress</span>
+                            {% elif complaint.status == "Rejected" %}
+                                <span class="status-dot w-1.5 h-1.5 rounded-full bg-rose-500"></span> <span class="status-label text-rose-700">Rejected</span>
+                            {% else %}
+                                <span class="status-dot w-1.5 h-1.5 rounded-full bg-slate-400"></span> <span class="status-label text-slate-700">Pending Review</span>
+                            {% endif %}
+                        </span>
+
+                        <!-- Severity Chip -->
+                        {% if complaint.severity == "Critical" %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-150">Critical Priority</span>
+                        {% elif complaint.severity == "High" %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-150">High Priority</span>
+                        {% elif complaint.severity == "Medium" %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-150">Medium Priority</span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">Low Priority</span>
+                        {% endif %}
+                    </div>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-1">
+                        <span id="title-success-prefix"></span>
+                        <span class="complaint-title-text">{{ complaint.title }}</span>
+                    </h2>
+                </div>
+
+                <!-- Horizontal Status tracker / Progress Timeline with emojis -->
+                <div class="border-t border-slate-100 pt-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-2">
+                        
+                        <!-- Step 1: Submitted -->
+                        <div class="flex items-center gap-3 md:flex-1 timeline-step" id="timeline-step-1">
+                            <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+                                📝
+                            </div>
+                            <div>
+                                <h5 class="text-xs font-bold text-slate-800 flex items-center gap-0.5">
+                                    <span class="check-prefix"></span>Submitted
+                                </h5>
+                                <p class="text-[10px] text-slate-400 font-semibold">Recorded</p>
+                            </div>
+                            <div class="hidden md:block h-0.5 {% if complaint.analysis_status == 'Completed' %}bg-indigo-600{% else %}bg-slate-200{% endif %} flex-grow mx-4 max-w-[80px]" id="connector-1-2"></div>
+                        </div>
+
+                        <!-- Step 2: AI Reviewed -->
+                        <div class="flex items-center gap-3 md:flex-1 timeline-step" id="timeline-step-2">
+                            {% if complaint.analysis_status == "Completed" %}
+                                <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+                                    🤖
+                                </div>
+                            {% else %}
+                                <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-400 flex items-center justify-center font-bold text-sm shrink-0">
+                                    🤖
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="text-xs font-bold {% if complaint.analysis_status == 'Completed' %}text-slate-800{% else %}text-slate-400{% endif %} flex items-center gap-0.5">
+                                    <span class="check-prefix"></span>AI Reviewed
+                                </h5>
+                                <p class="text-[10px] text-slate-400 font-semibold">Genuineness Check</p>
+                            </div>
+                            <div class="hidden md:block h-0.5 {% if complaint.department %}bg-indigo-600{% else %}bg-slate-200{% endif %} flex-grow mx-4 max-w-[80px]" id="connector-2-3"></div>
+                        </div>
+
+                        <!-- Step 3: Assigned -->
+                        <div class="flex items-center gap-3 md:flex-1 timeline-step" id="timeline-step-3">
+                            {% if complaint.department %}
+                                <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+                                    🏢
+                                </div>
+                            {% else %}
+                                <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-400 flex items-center justify-center font-bold text-sm shrink-0">
+                                    🏢
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="text-xs font-bold {% if complaint.department %}text-slate-800{% else %}text-slate-400{% endif %} flex items-center gap-0.5">
+                                    <span class="check-prefix"></span>Assigned
+                                </h5>
+                                <p class="text-[10px] text-slate-400 font-semibold">Route to Division</p>
+                            </div>
+                            <div class="hidden md:block h-0.5 {% if complaint.status == 'In Progress' or complaint.status == 'Resolved' %}bg-indigo-600{% else %}bg-slate-200{% endif %} flex-grow mx-4 max-w-[80px]" id="connector-3-4"></div>
+                        </div>
+
+                        <!-- Step 4: In Progress -->
+                        <div class="flex items-center gap-3 md:flex-1 timeline-step" id="timeline-step-4">
+                            {% if complaint.status == "In Progress" or complaint.status == "Resolved" %}
+                                <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+                                    ⚙️
+                                </div>
+                            {% elif complaint.status == "Rejected" %}
+                                <div class="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+                                    ❌
+                                </div>
+                            {% else %}
+                                <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-400 flex items-center justify-center font-bold text-sm shrink-0">
+                                    ⚙️
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="text-xs font-bold {% if complaint.status == 'In Progress' or complaint.status == 'Resolved' %}text-slate-800{% elif complaint.status == 'Rejected' %}text-rose-700{% else %}text-slate-400{% endif %} flex items-center gap-0.5">
+                                    <span class="check-prefix">
+                                        {% if complaint.status == 'In Progress' or complaint.status == 'Resolved' %}
+                                            ✅ 
+                                        {% elif complaint.status == 'Rejected' %}
+                                            ❌ 
+                                        {% endif %}
+                                    </span>
+                                    <span class="timeline-step-label-text">
+                                        {% if complaint.status == 'Rejected' %}
+                                            Rejected
+                                        {% else %}
+                                            In Progress
+                                        {% endif %}
+                                    </span>
+                                </h5>
+                                <p class="text-[10px] text-slate-400 font-semibold">Field Operations</p>
+                            </div>
+                            <div class="hidden md:block h-0.5 {% if complaint.status == 'Resolved' %}bg-indigo-600{% else %}bg-slate-200{% endif %} flex-grow mx-4 max-w-[80px]" id="connector-4-5"></div>
+                        </div>
+
+                        <!-- Step 5: Resolved -->
+                        <div class="flex items-center gap-3 md:flex-initial timeline-step" id="timeline-step-5">
+                            {% if complaint.status == "Resolved" %}
+                                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+                                    ✅
+                                </div>
+                            {% else %}
+                                <div class="w-8 h-8 rounded-full bg-slate-105 border border-slate-200 text-slate-400 flex items-center justify-center font-bold text-sm shrink-0">
+                                    ✅
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="text-xs font-bold {% if complaint.status == 'Resolved' %}text-slate-800{% else %}text-slate-400{% endif %} flex items-center gap-0.5">
+                                    <span class="check-prefix">{% if complaint.status == 'Resolved' %}✅ {% endif %}</span>Resolved
+                                </h5>
+                                <p class="text-[10px] text-slate-400 font-semibold">SLA Target Met</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chips / Tags Section -->
+                <div class="border-t border-slate-100 pt-4 flex flex-wrap gap-2">
+                    {% if complaint.category %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-755 border border-indigo-100">
+                            {{ complaint.category }}
+                        </span>
+                    {% endif %}
+                    
+                    {% if complaint.analysis_status == "Completed" %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> AI Verified
+                        </span>
+                    {% endif %}
+
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                        Duplicate Risk Low
+                    </span>
+
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 border border-purple-100">
+                        {{ complaint.get_visibility_display }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Dashboard Split Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <!-- Left Main Content Area (2 Columns) -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- Complaint Information Card -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md shadow-slate-100/50 space-y-6">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <i data-lucide="file-text" class="w-5 h-5 text-indigo-650"></i>
+                            Grievance Information
+                        </h3>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-xs border-b border-slate-100 pb-5">
+                            <div>
+                                <span class="text-slate-405 font-bold block uppercase tracking-wider mb-1">Reporter</span>
+                                <span class="font-extrabold text-slate-800">{{ complaint.reporter_name|default:complaint.user.username }}</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-405 font-bold block uppercase tracking-wider mb-1">Created At</span>
+                                <span class="font-extrabold text-slate-800">{{ complaint.created_at }}</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-405 font-bold block uppercase tracking-wider mb-1">Department</span>
+                                <span class="font-extrabold text-slate-800">{{ complaint.department|default:"Unassigned" }}</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-405 font-bold block uppercase tracking-wider mb-1">Location Details</span>
+                                <span class="font-extrabold text-slate-800">
+                                    {% if complaint.location %}
+                                        {{ complaint.location }}
+                                    {% else %}
+                                        {{ complaint.address }}, {{ complaint.district }}, {{ complaint.state }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-slate-405 font-bold block uppercase tracking-wider mb-1">Priority Metric</span>
+                                <span class="font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">{{ complaint.priority_score|default:"Unrated" }}/100</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-405 font-bold block uppercase tracking-wider mb-1">Constituency Support</span>
+                                <span class="font-extrabold text-slate-850">🤝 {{ complaint.supports.count|default:"0" }} Supports</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <h4 class="text-xs font-bold text-slate-405 uppercase tracking-widest">Original Description</h4>
+                            <p class="text-sm text-slate-600 leading-relaxed bg-slate-50/50 p-5 rounded-2xl border border-slate-100 whitespace-pre-line">
+                                {{ complaint.description }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Photographic Evidence Display -->
+                    {% if complaint.image %}
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md shadow-slate-100/50 space-y-4">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="image" class="w-5 h-5 text-indigo-600"></i>
+                            Photographic Evidence
+                        </h3>
+                        <div class="rounded-2xl overflow-hidden border border-slate-200 max-h-[500px]">
+                            <img src="{{ complaint.image.url }}" alt="Evidence Image" class="w-full h-auto object-contain mx-auto bg-slate-50">
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Voice Recording Attachment (Conditional) -->
+                    {% if complaint.voice %}
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md shadow-slate-100/50 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <i data-lucide="mic" class="w-5 h-5 text-rose-500"></i>
+                                🎤 Voice Recording Available
+                            </h3>
+                            <span class="text-[10px] text-slate-400 font-semibold font-mono">AUDIO FILE</span>
+                        </div>
+
+                        <!-- HTML5 Audio element -->
+                        <audio id="complaint-audio-engine" src="{{ complaint.voice}}" class="hidden"></audio>
+
+                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-150 space-y-4">
+                            <div class="flex flex-col sm:flex-row items-center gap-4">
+                                <!-- Control Play/Pause Button -->
+                                <button id="custom-audio-play-btn" class="h-12 w-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shadow-md focus:outline-none transition-all hover:scale-105 shrink-0 cursor-pointer">
+                                    <i data-lucide="play" id="audio-play-icon" class="w-5 h-5 fill-white"></i>
+                                    <i data-lucide="pause" id="audio-pause-icon" class="w-5 h-5 fill-white hidden"></i>
+                                </button>
+
+                                <div class="flex-grow w-full space-y-2">
+                                    <!-- Dynamic Scrubber Bar -->
+                                    <div class="relative w-full h-1.5 bg-slate-200 rounded-full cursor-pointer" id="audio-scrubber-track">
+                                        <div class="absolute left-0 top-0 h-full bg-indigo-655 rounded-full w-0" id="audio-progress-bar"></div>
+                                        <div class="absolute top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-full bg-white border-2 border-indigo-650 shadow-md cursor-pointer" id="audio-scrubber-knob" style="left: 0%"></div>
+                                    </div>
+                                    <div class="flex justify-between items-center text-[10px] text-slate-455 font-bold font-mono">
+                                        <span id="audio-current-time">00:00</span>
+                                        <span id="audio-duration">00:00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if complaint.voice_transcript %}
+                        <div class="space-y-2 pt-2">
+                            <span class="text-xs font-bold text-slate-450 uppercase tracking-wider block">AI Transcribed Text</span>
+                            <div class="p-4 bg-slate-50/50 border border-slate-200 border-dashed rounded-2xl text-xs font-semibold text-slate-650 leading-relaxed italic">
+                                "{{ complaint.voice_transcript }}"
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- AI Section (Glassmorphic Card) -->
+                    <div class="bg-slate-900 text-white rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-lg border border-slate-800 space-y-6">
+                        <!-- Decorative subtle grid background -->
+                        <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:3rem_3rem]"></div>
+                        
+                        <div class="relative flex items-center gap-2.5 pb-4 border-b border-white/10">
+                            <div class="h-8 w-8 rounded-xl bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 flex items-center justify-center">
+                                <i data-lucide="cpu" class="w-4 h-4"></i>
+                            </div>
+                            <h3 class="text-sm font-extrabold uppercase tracking-widest text-indigo-300">JanSankalp AI Analysis Console</h3>
+                        </div>
+
+                        <div class="relative grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                            <!-- AI Confidence Meter (Calculated correctly in range 0-1) -->
+                            <div class="space-y-3">
+                                <span class="text-[10px] font-bold tracking-wider text-indigo-300 uppercase block">Genuineness Confidence</span>
+                                <div class="flex items-baseline gap-2">
+                                    <h4 class="text-4xl font-extrabold text-white leading-none">{% widthratio complaint.ai_confidence 1 100 %}%</h4>
+                                </div>
+                                
+                                <!-- Progress bar calculated correctly with float scaling -->
+                                <div class="space-y-2">
+                                    <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full rounded-full" style="width: {% widthratio complaint.ai_confidence 1 100 %}%"></div>
+                                    </div>
+                                    <span class="text-[10px] font-mono text-indigo-200/60 block leading-none tracking-wider">
+                                        {% with pct=complaint.ai_confidence %}
+                                            {% if pct >= 0.9 %}
+                                                █████████░
+                                            {% elif pct >= 0.8 %}
+                                                ████████░░
+                                            {% elif pct >= 0.7 %}
+                                                ███████░░░
+                                            {% elif pct >= 0.6 %}
+                                                ██████░░░░
+                                            {% else %}
+                                                █████░░░░░
+                                            {% endif %}
+                                        {% endwith %}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Summary & Actions -->
+                            <div class="md:col-span-2 space-y-4">
+                                <div class="space-y-1.5">
+                                    <h5 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">AI Generated Summary</h5>
+                                    <p class="text-xs text-slate-300 leading-relaxed italic">
+                                        "{{ complaint.ai_summary|default:'Awaiting structural briefing...' }}"
+                                    </p>
+                                </div>
+
+                                {% if complaint.suggested_actions %}
+                                <div class="space-y-1.5 pt-2 border-t border-white/5">
+                                    <h5 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Suggested Administrative Actions</h5>
+                                    <p class="text-xs text-slate-300 leading-relaxed">
+                                        {{ complaint.suggested_actions }}
+                                    </p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- English Translation Card (Conditional) -->
+                    {% if complaint.english_translation %}
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md shadow-slate-100/50 space-y-4">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="languages" class="w-5 h-5 text-indigo-600"></i>
+                            English Translation
+                        </h3>
+                        <p class="text-sm text-slate-650 leading-relaxed bg-slate-50/50 p-5 rounded-2xl border border-slate-100 font-medium">
+                            {{ complaint.english_translation }}
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Comments & Discussion Threads Section (Includes Comment Delete option) -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md shadow-slate-100/50 space-y-6">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <i data-lucide="messages-square" class="w-5 h-5 text-indigo-650"></i>
+                            Citizen Discussion &amp; Official Feed
+                        </h3>
+
+                        <!-- Comments Container -->
+                        <div class="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar" id="complaint-comments-list">
+                            {% for comment in complaint.comments.all %}
+                                <div id="comment-card-{{ comment.id }}" class="comment-card-wrapper transition-all duration-300">
+                                    {% if comment.is_government %}
+                                        <!-- Government Officer response (Align Right) -->
+                                        <div class="flex items-start justify-end gap-3 max-w-[85%] ml-auto">
+                                            <div class="flex flex-col gap-1 items-end">
+                                                <div class="flex items-center gap-2">
+                                                    <button type="button" onclick="deleteComment('{{ complaint.id }}','{{comment.id}}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold cursor-pointer shrink-0 mt-1 self-start flex items-center gap-0.5">
+                                                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                                </button>
+                                                    <span class="text-[9px] text-slate-400 font-mono">{{ comment.created_at|date:"d M Y, h:i A" }}</span>
+                                                    <span class="text-xs font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded flex items-center gap-1">
+                                                        🏛️ {{ comment.user.username }} (Officer)
+                                                    </span>
+                                                </div>
+                                                <div class="bg-indigo-50 text-indigo-950 text-xs font-semibold p-4 rounded-2xl rounded-tr-none leading-relaxed shadow-sm border border-indigo-100">
+                                                    {{ comment.comment }}
+                                                </div>
+                                            </div>
+                                            <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-md">
+                                                {{ comment.user.username|slice:":1"|upper }}
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <!-- Citizen post (Align Left) -->
+                                        <div class="flex items-start gap-3 max-w-[85%] justify-between">
+                                            <div class="flex items-start gap-3">
+                                                <div class="w-8 h-8 rounded-xl bg-slate-205 text-slate-650 flex items-center justify-center font-bold text-xs shrink-0">
+                                                    {{ comment.user.username|slice:":1"|upper }}
+                                                </div>
+                                                <div class="flex flex-col gap-1">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-xs font-extrabold text-slate-800">Anonymous</span>
+                                                        <span class="text-[9px] text-slate-400 font-mono">{{ comment.created_at|date:"d M Y, h:i A" }}</span>
+                                                    </div>
+                                                    <div class="bg-slate-100 text-slate-850 text-xs font-semibold p-4 rounded-2xl rounded-tl-none leading-relaxed">
+                                                        {{ comment.comment }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button type="button" onclick="deleteComment('{{ complaint.id }}','{{comment.id}}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold cursor-pointer shrink-0 mt-1 self-start flex items-center gap-0.5">
+                                                <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% empty %}
+                                <div class="text-center py-8 text-slate-400 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                                    <p class="text-xs font-bold uppercase tracking-wider">No discussions or official remarks recorded yet</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Post new comment form -->
+                        <div class="border-t border-slate-100 pt-4">
+                            <form id="govt-comment-submit-form" method="POST" action="/complaints/{{ complaint.id }}/comment/" class="flex gap-2">
+                                {% csrf_token %}
+                                <input type="text" name="comment" required placeholder="Type official response to this citizen..." class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all">
+                                <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-indigo-600 text-white font-bold rounded-xl text-xs transition-all shadow-sm shrink-0 cursor-pointer">
+                                    Send Response
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side Tools Panel Area -->
+                <div class="space-y-6">
+                    
+                    <!-- Government Action Panel -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md shadow-slate-100/50 space-y-4">
+                        <h3 class="text-sm font-bold text-slate-850 border-b border-slate-100 pb-3 flex items-center gap-2">
+                            <i data-lucide="shield-alert" class="w-4.5 h-4.5 text-indigo-600"></i>
+                            Administrative Actions
+                        </h3>
+
+                        <div class="flex flex-col gap-3">
+                            <!-- In Progress Button -->
+                            <button type="button" onclick="performClientStatusAction('In Progress')" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 border border-blue-200 hover:bg-blue-105 text-blue-700 font-extrabold rounded-xl text-xs transition-all cursor-pointer">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Mark In Progress
+                            </button>
+
+                        
+                            <button type="button" onclick="performClientStatusAction('Resolved')" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs shadow-md shadow-emerald-100 transition-all cursor-pointer">
+                                <i data-lucide="check-circle" class="w-4 h-4"></i> Resolve Complaint
+                            </button>
+
+                            <!-- Reject Button -->
+                            <button type="button" onclick="performClientStatusAction('Rejected')" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-rose-50 border border-rose-200 hover:bg-rose-105 text-rose-700 font-extrabold rounded-xl text-xs transition-all cursor-pointer">
+                                <i data-lucide="x-circle" class="w-4 h-4"></i> Reject Complaint
+                            </button>
+
+                            <hr class="border-slate-100 my-1">
+
+                            <!-- Print Page (Download PDF alternative) -->
+                            <button type="button" onclick="window.print()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl text-xs transition-all shadow-sm cursor-pointer">
+                                <i data-lucide="printer" class="w-4 h-4"></i> Print / Save PDF Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Crystal Clear Confirmation Dialog Centered (Solid White bg, clear dark grey backdrop) -->
+<div id="general-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="fixed inset-0 bg-slate-900/60 transition-opacity" id="general-modal-backdrop"></div>
+    
+    <div class="relative bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all max-w-md w-full border border-slate-200 z-10">
+        <div class="bg-white p-6 sm:p-8">
+            <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600" id="general-modal-icon-wrapper">
+                    <i data-lucide="help-circle" class="w-6 h-6"></i>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="text-base font-extrabold text-slate-900" id="general-modal-title">Are you sure?</h3>
+                    <p class="text-xs font-semibold leading-relaxed text-slate-500" id="general-modal-desc">
+                        Are you sure you want to transition this complaint state? This action will update the official platform records.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100">
+            <button type="button" id="general-modal-cancel" class="px-5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-105 transition shadow-sm cursor-pointer">
+                Cancel
+            </button>
+            <button type="button" id="general-modal-confirm" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white shadow-md transition cursor-pointer">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Lucide Icons and Interactivity Scripts -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+    lucide.createIcons();
+
+    const generalModal = document.getElementById('general-confirm-modal');
+    const generalModalTitle = document.getElementById('general-modal-title');
+    const generalModalDesc = document.getElementById('general-modal-desc');
+    const generalModalCancel = document.getElementById('general-modal-cancel');
+    const generalModalConfirm = document.getElementById('general-modal-confirm');
+    const generalModalBackdrop = document.getElementById('general-modal-backdrop');
+    const generalIconWrapper = document.getElementById('general-modal-icon-wrapper');
+
+    let activeStateTransition = '';
+
+    function performClientStatusAction(nextState) {
+        activeStateTransition = nextState;
+        
+        generalModalTitle.innerText = "Are you sure?";
+        if (nextState === 'In Progress') {
+            generalModalDesc.innerText = "Are you sure you want to transition this complaint to 'In Progress'? This will notify the citizen that a repair crew is working at the site.";
+            generalIconWrapper.className = "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-650";
+            generalIconWrapper.innerHTML = '<i data-lucide="refresh-cw" class="w-6 h-6 animate-spin"></i>';
+        } else if (nextState === 'Resolved') {
+            generalModalDesc.innerText = "Are you sure you want to resolve this complaint? This marks the issue as resolved and archives it.";
+            generalIconWrapper.className = "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600";
+            generalIconWrapper.innerHTML = '<i data-lucide="check-circle" class="w-6 h-6"></i>';
+        } else if (nextState === 'Rejected') {
+            generalModalDesc.innerText = "Are you sure you want to reject this complaint? This will close the grievance as rejected.";
+            generalIconWrapper.className = "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-600";
+            generalIconWrapper.innerHTML = '<i data-lucide="alert-triangle" class="w-6 h-6"></i>';
+        }
+
+        generalModal.classList.remove('hidden');
+        lucide.createIcons();
+    }
+
+    function closeGeneralModal() {
+        generalModal.classList.add('hidden');
+        activeStateTransition = '';
+    }
+
+    if (generalModalCancel) generalModalCancel.addEventListener('click', closeGeneralModal);
+    if (generalModalBackdrop) generalModalBackdrop.addEventListener('click', closeGeneralModal);
+
+    if (generalModalConfirm) {
+
+        generalModalConfirm.addEventListener("click", async () => {
+
+            const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+            try {
+
+                const response = await fetch(
+                    "/complaint/{{ complaint.id }}/change-status/",
+                    {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": csrfToken,
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            status: activeStateTransition,
+                        }),
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    alert(data.message);
+                    return;
+                }
+
+                closeGeneralModal();
+
+                // Reload page so Django renders the new status
+                location.reload();
+
+            } catch (err) {
+
+                console.error(err);
+                alert("Unable to update complaint status.");
+
+            }
+
+        });
+
+    }
+    // Comment deletion API client-side trigger
+    async function deleteComment(complaintId, commentId) {
+
+        if (!confirm("Are you sure you want to delete this comment?"))
+            return;
+
+        const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+        try {
+
+            const response = await fetch(
+                `/complaint/${complaintId}/delete-comment/`,
+                {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrfToken,
+                    },
+                    body: new URLSearchParams({
+                        comment_id: commentId,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+            
+
+            if (data.success) {
+
+                const card = document.getElementById(`comment-card-${commentId}`);
+
+                if (card) {
+                    card.classList.add("opacity-0", "scale-95");
+
+                    setTimeout(() => {
+                        card.remove();
+                    }, 300);
+                }
+
+            } else {
+                alert(data.message);
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Something went wrong.");
+        }
+    }
+
+    // Custom Audio Player controls
+    const audioEngine = document.getElementById('complaint-audio-engine');
+    const playPauseBtn = document.getElementById('custom-audio-play-btn');
+    const playIcon = document.getElementById('audio-play-icon');
+    const pauseIcon = document.getElementById('audio-pause-icon');
+    const scrubberTrack = document.getElementById('audio-scrubber-track');
+    const progressBar = document.getElementById('audio-progress-bar');
+    const scrubberKnob = document.getElementById('audio-scrubber-knob');
+    const currentTimeText = document.getElementById('audio-current-time');
+    const durationText = document.getElementById('audio-duration');
+
+    if (audioEngine && playPauseBtn) {
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "00:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        audioEngine.addEventListener('loadedmetadata', () => {
+            durationText.innerText = formatTime(audioEngine.duration);
+        });
+
+        if (audioEngine.readyState >= 1) {
+            durationText.innerText = formatTime(audioEngine.duration);
+        }
+
+        playPauseBtn.addEventListener('click', () => {
+            if (audioEngine.paused) {
+                audioEngine.play();
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+            } else {
+                audioEngine.pause();
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+            }
+        });
+
+        audioEngine.addEventListener('timeupdate', () => {
+            const ratio = audioEngine.currentTime / audioEngine.duration;
+            const percentage = ratio * 100;
+            progressBar.style.width = `${percentage}%`;
+            scrubberKnob.style.left = `${percentage}%`;
+            currentTimeText.innerText = formatTime(audioEngine.currentTime);
+        });
+
+        scrubberTrack.addEventListener('click', (e) => {
+            const rect = scrubberTrack.getBoundingClientRect();
+            const clickPosition = (e.clientX - rect.left) / rect.width;
+            audioEngine.currentTime = clickPosition * audioEngine.duration;
+        });
+
+        audioEngine.addEventListener('ended', () => {
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+            audioEngine.currentTime = 0;
+        });
+    }
+
+    // Comment Submission
+    const commentForm = document.getElementById('govt-comment-submit-form');
+    const commentsListContainer = document.getElementById('complaint-comments-list');
+
+    if (commentForm && commentsListContainer) {
+        commentForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const textarea = commentForm.querySelector('input[name="comment"]');
+            const commentText = textarea.value.trim();
+            if (commentText === "") return;
+
+            const formData = new FormData();
+            formData.append("comment", commentText);
+
+            const csrfToken = commentForm.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            try {
+                const response = await fetch(commentForm.action, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrfToken
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.status === "success") {
+                    const commentDiv = document.createElement("div");
+                    commentDiv.id = `comment-card-${data.id}`;
+                    commentDiv.className = "comment-card-wrapper flex items-start justify-end gap-3 max-w-[85%] ml-auto animate-fade-in";
+                    commentDiv.innerHTML = `
+                        <div class="flex flex-col gap-1 items-end">
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="deleteComment('${data.id}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold cursor-pointer flex items-center gap-0.5 mr-2">
+                                    <i data-lucide="trash-2" class="w-3 h-3"></i> Delete
+                                </button>
+                                <span class="text-[9px] text-slate-400 font-mono">Just now</span>
+                                <span class="text-xs font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded flex items-center gap-1">
+                                    🏛️ ${data.username || 'Officer'} (Officer)
+                                </span>
+                            </div>
+                            <div class="bg-indigo-50 text-indigo-950 text-xs font-semibold p-4 rounded-2xl rounded-tr-none leading-relaxed shadow-sm border border-indigo-100">
+                                ${data.comment}
+                            </div>
+                        </div>
+                        <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-md">
+                            ${(data.username || 'O').slice(0, 1).toUpperCase()}
+                        </div>
+                    `;
+
+                    const emptyMsg = commentsListContainer.querySelector('p');
+                    if (emptyMsg && emptyMsg.innerText.toLowerCase().includes("no discussions")) {
+                        commentsListContainer.innerHTML = '';
+                    }
+
+                    commentsListContainer.appendChild(commentDiv);
+                    commentsListContainer.scrollTop = commentsListContainer.scrollHeight;
+                    textarea.value = "";
+                    lucide.createIcons();
+                } else {
+                    alert(data.message || "Error posting comment.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Network error: Failed to post official comment.");
+            }
+            location.reload()
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,247 @@
+
+{% extends "complaints/base.html" %}
+{% block title %}Manage Government Officials{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-black text-slate-800">
+            Government Officials Management
+        </h1>
+        <p class="text-slate-500 mt-2">
+            Search users and assign or remove Government access.
+        </p>
+    </div>
+
+    <!-- Search -->
+    <form method="GET" class="mb-8">
+        <div class="flex gap-4">
+
+            <input
+                type="text"
+                name="search"
+                value="{{ request.GET.search }}"
+                placeholder="Search username..."
+                class="flex-1 rounded-xl border border-slate-300 px-5 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+
+            <button
+                class="rounded-xl bg-indigo-600 px-8 py-3 text-white font-bold hover:bg-indigo-700 transition">
+                Search
+            </button>
+
+        </div>
+    </form>
+
+    <!-- Users -->
+    <div class="bg-white rounded-3xl shadow border border-slate-200 overflow-hidden">
+
+        <table class="w-full">
+
+            <thead class="bg-slate-100">
+
+                <tr>
+
+                    <th class="text-left px-6 py-4 text-xs uppercase font-bold">
+                        User
+                    </th>
+
+                    <th class="text-left px-6 py-4 text-xs uppercase font-bold">
+                        Current Role
+                    </th>
+
+                    <!-- <th class="text-left px-6 py-4 text-xs uppercase font-bold">
+                        Phone
+                    </th>
+
+                    <th class="text-left px-6 py-4 text-xs uppercase font-bold">
+                        State
+                    </th> -->
+
+                    <th class="text-center px-6 py-4 text-xs uppercase font-bold">
+                        Actions
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for profile in profiles %}
+
+                <tr class="border-t hover:bg-slate-50">
+
+                    <!-- User -->
+                    <td class="px-6 py-5">
+
+                        <div class="flex items-center gap-4">
+
+                            {% if profile.profile_photo %}
+
+                            <img
+                                src="{{ profile.profile_photo.url }}"
+                                class="w-12 h-12 rounded-full object-cover">
+
+                            {% else %}
+
+                            <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-700">
+                                {{ profile.user.username|slice:":1"|upper }}
+                            </div>
+
+                            {% endif %}
+
+                            <div>
+
+                                <div class="font-bold text-slate-800">
+                                    {{ profile.user.username }}
+                                </div>
+
+                                <div class="text-xs text-slate-500">
+                                    {{ profile.user.email }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    <!-- Role -->
+                    <td class="px-6 py-5">
+
+                        {% if profile.role == "Government" %}
+
+                        <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
+                            Government
+                        </span>
+
+                        {% elif profile.role == "Admin" %}
+
+                        <span class="px-3 py-1 rounded-full bg-emerald-200 text-emerald-700 text-xs font-bold">
+                            Admin
+                        </span>
+
+                        {% else %}
+
+                        <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">
+                            Citizen
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <!-- Phone
+                    <td class="px-6 py-5">
+
+                        {{ profile.phone|default:"-" }}
+
+                    </td>
+
+                     State -->
+                    <!-- <td class="px-6 py-5">
+
+                        {{ profile.state|default:"-" }}
+
+                    </td> --> 
+
+                    <!-- Buttons -->
+                    <td class="px-6 py-5">
+
+                        {% if profile.role != "Admin" and profile.user != request.user %}
+
+                        <div class="flex justify-center gap-3">
+
+
+                            {% csrf_token %}
+
+                            <button
+                                onclick="makeGovernment('{{ profile.user.id }}')"
+                                class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition">
+                                Make Government
+                            </button>
+
+                            <!-- Remove Govt -->
+
+                            <button
+                                onclick="removeGovernment('{{ profile.user.id }}')"
+                                class="px-4 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition">
+                                Remove Government
+                            </button>
+
+                        </div>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+            {% empty %}
+
+                <tr>
+
+                    <td colspan="5" class="text-center py-12 text-slate-500 font-semibold">
+
+                        No users found.
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+    async function makeGovernment(userId){
+
+        const response = await fetch(`/make-government/${userId}/`,{
+            method:"POST",
+            headers:{
+                "X-CSRFToken":csrfToken
+            }
+        });
+
+        const data = await response.json();
+
+        if(data.success){
+            location.reload();
+        }
+    }
+
+
+    async function removeGovernment(userId){
+
+        const response = await fetch(`/remove-government/${userId}/`,{
+            method:"POST",
+            headers:{
+                "X-CSRFToken":csrfToken
+            }
+        });
+
+        const data = await response.json();
+
+        if(data.success){
+            location.reload();
+        }
+    }
+
+
+
+</script>
+
+{% endblock %}
+
