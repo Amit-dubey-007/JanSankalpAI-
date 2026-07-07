@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+.venv/
+
+# Environment Variables
+.env
+
+# Git
+.git
+.gitignore
+
+# Django generated
+staticfiles/
+media/
+
+# VS Code
+.vscode/
+
+# Local Windows FFmpeg
+ffmpeg-2026-06-29-git-de6bcf5c05-full_build/
+
+# OS files
+.DS_Store
+Thumbs.db

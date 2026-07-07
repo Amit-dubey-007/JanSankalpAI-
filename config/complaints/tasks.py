@@ -8,8 +8,8 @@ import traceback
 
 @shared_task
 def analyze_complaint_task(complaint_id):
-   
-
+    
+    print("func executed")
     complaint = Complaint.objects.get(pk=complaint_id)
 
     try:
@@ -20,6 +20,8 @@ def analyze_complaint_task(complaint_id):
 
 
     except Exception as e:
-
+        print("ERROR IN COMPLAINT:", e)
+        traceback.print_exc()
+        raise
         complaint.analysis_status = "Failed"
         complaint.save()

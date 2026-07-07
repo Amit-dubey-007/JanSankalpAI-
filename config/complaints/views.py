@@ -19,13 +19,16 @@ import cloudinary.uploader
 @login_required
 def create_complaint(request):
     print("new complaint")
+    print("jhiid")
 
     if request.method == "POST":
         form = ComplaintForm(request.POST, request.FILES)
 
-        
+        print("inside post request")
 
         if form.is_valid():
+
+            print("inside isvalid")
             
             complaint = form.save(commit=False)
             complaint.user = request.user
@@ -45,9 +48,11 @@ def create_complaint(request):
                 complaint.voice = result["secure_url"]
                 complaint.voice_public_id = result["public_id"]
 
+            print("before save")
+
             complaint.save()
 
-            
+            print("after save")
 
             Follow.objects.create(
                 complaint=complaint,
@@ -60,6 +65,7 @@ def create_complaint(request):
 
     else:
         form = ComplaintForm()
+        print("hii")
 
     return render(request, "complaints/complaint.html", {"form": form})
 

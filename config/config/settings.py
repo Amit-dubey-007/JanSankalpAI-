@@ -33,7 +33,9 @@ ALLOWED_HOSTS = [
     ".onrender.com",
 ]
 
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+]
 
 # Application definition
 
@@ -166,9 +168,9 @@ MEDIA_ROOT= os.path.join(BASE_DIR,'media')
 
 MEDIA_URL = '/media/'
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_BROKER_URL = "redis://redis:6379/0"
 
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 
 CELERY_ACCEPT_CONTENT = ["json"]
 
@@ -197,4 +199,9 @@ STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
 }
