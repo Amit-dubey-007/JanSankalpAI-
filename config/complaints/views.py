@@ -198,7 +198,7 @@ def public_dashboard(request):
 
     trending_complaints = complaints.filter(created_at__gte = timezone.now() - timezone.timedelta(days=7))
 
-    trending_complaints = trending_complaints.exclude(status="Resolved")
+    # trending_complaints = trending_complaints.exclude(status="Resolved")
 
 
     trending_complaints = trending_complaints.annotate(
@@ -403,7 +403,7 @@ def govt_dashboard(request):
 
         trending_complaints = complaints.filter(created_at__gte = timezone.now() - timezone.timedelta(days=7))
 
-        trending_complaints = trending_complaints.exclude(status="Resolved")
+        # trending_complaints = trending_complaints.exclude(status="Resolved")
 
         trending_complaints = trending_complaints.annotate(
             supports_count=Count("supports")
