@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from decouple import config
+from decouple import config,Csv
 from pathlib import Path
 import os
 
@@ -27,15 +27,24 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", cast=bool)
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    ".onrender.com",
-]
+# ALLOWED_HOSTS = [
+#     "localhost",
+#     "127.0.0.1",
+#     ".onrender.com",
+# ]
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    cast=Csv()
+)
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.onrender.com",
-]
+# CSRF_TRUSTED_ORIGINS = [
+#     "https://*.onrender.com",
+# ]
+
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    cast=Csv()
+)
 
 # Application definition
 
@@ -162,7 +171,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'amit4528990@gmail.com'
+EMAIL_HOST_USER = config("EMAIL_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_PASSWORD")
 
 GEMINI_API_KEY = config("GEMINI_API_KEY")
