@@ -30,6 +30,16 @@ def test_email(request):
     )
     return HttpResponse("Sent")
 
+from django.http import HttpResponse
+import socket
+
+def test_socket(request):
+    try:
+        socket.create_connection(("smtp-relay.brevo.com", 587), timeout=10)
+        return HttpResponse("Connection Successful")
+    except Exception as e:
+        return HttpResponse(str(e))
+
 @login_required
 def create_complaint(request):
 
