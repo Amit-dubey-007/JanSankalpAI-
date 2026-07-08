@@ -106,6 +106,9 @@ else:
             "PASSWORD": config("DB_PASSWORD"),
             "HOST": config("DB_HOST"),
             "PORT": config("DB_PORT"),
+            "OPTIONS": {
+                "sslmode": "require",
+            },
         }
     }
 
@@ -168,9 +171,9 @@ MEDIA_ROOT= os.path.join(BASE_DIR,'media')
 
 MEDIA_URL = '/media/'
 
-CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_BROKER_URL = config("REDIS_URL")
 
-CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+CELERY_RESULT_BACKEND = config("REDIS_URL")
 
 CELERY_ACCEPT_CONTENT = ["json"]
 
