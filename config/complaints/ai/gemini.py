@@ -15,7 +15,8 @@ client = genai.Client(api_key=settings.GEMINI_API_KEY)
 import subprocess
 import os
 
-FFMPEG = r"C:\Users\scien\OneDrive\Desktop\JanSankalpAI\config\ffmpeg-2026-06-29-git-de6bcf5c05-full_build\bin\ffmpeg.exe"
+# FFMPEG = r"C:\Users\scien\OneDrive\Desktop\JanSankalpAI\config\ffmpeg-2026-06-29-git-de6bcf5c05-full_build\bin\ffmpeg.exe"
+FFMPEG = "ffmpeg"
 
 def convert_webm_to_mp3(input_path):
     output_path = os.path.splitext(input_path)[0] + ".mp3"
@@ -58,9 +59,9 @@ def send_to_gemini(complaint):
 
         response = requests.get(
             complaint.image.url,
+            stream=True,
             timeout=20
         )
-
         response.raise_for_status()
 
         img = Image.open(BytesIO(response.content))
@@ -101,6 +102,7 @@ def send_to_gemini(complaint):
         # Download audio from Cloudinary
         response = requests.get(
             complaint.voice,
+            stream= True,
             timeout=20
         )
 
@@ -124,6 +126,13 @@ def send_to_gemini(complaint):
         audio_file = client.files.upload(
             file=mp3_path
         )
+
+        # cleanup temporary files
+        if os.path.exists(webm_path):
+            os.remove(webm_path)
+
+        if os.path.exists(mp3_path):
+            os.remove(mp3_path)
 
 
         # Wait until Gemini processes audio
@@ -162,6 +171,6 @@ def send_to_gemini(complaint):
             if attempt == 2:
                 # print(e)
                 raise e
-            time.sleep(attempt**2)
+            time.sleep(2**attempt)
 
     return json.loads(response.text)
