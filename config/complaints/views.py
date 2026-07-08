@@ -86,10 +86,6 @@ def delete_complaint(request, pk):
     if request.method == "POST":
         try:
             complaint = Complaint.objects.get(pk=pk, user=request.user)
-            print("Deleting image:", complaint.image.public_id)
-            print("Deleting voice:", complaint.voice_public_id)
-            print(complaint.image.url)
-            print(complaint.voice)
             if complaint.voice_public_id:
 
                 response= cloudinary.uploader.destroy(complaint.voice_public_id,resource_type="video")
@@ -100,7 +96,7 @@ def delete_complaint(request, pk):
                     complaint.image.public_id,
                     resource_type="image"
                 )
-                print(response)
+                
                 
 
             Complaint.objects.filter(pk=pk).delete()
