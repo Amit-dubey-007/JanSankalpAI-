@@ -16,6 +16,20 @@ from accounts.models import Profile
 import cloudinary.uploader
 # Create your views here.
 
+from django.core.mail import send_mail
+from django.http import HttpResponse
+from django.conf import settings
+
+def test_email(request):
+    send_mail(
+        "Test",
+        "Hello",
+        settings.EMAIL_HOST_USER,
+        ["your_email@gmail.com"],
+        fail_silently=False,
+    )
+    return HttpResponse("Sent")
+
 @login_required
 def create_complaint(request):
 

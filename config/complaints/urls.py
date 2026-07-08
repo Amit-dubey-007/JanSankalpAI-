@@ -27,5 +27,5 @@ urlpatterns=[
     path("guidelines",views.guidelines,name="guidelines"),
     path("contact",views.contact,name="contact"),
     path('about',views.about,name="about"),
-    
+    path('test-email',views.test_email,name="test_email"),
 ]
