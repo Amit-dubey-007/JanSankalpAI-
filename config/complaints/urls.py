@@ -29,4 +29,5 @@ urlpatterns=[
     path('about',views.about,name="about"),
     path('test-email',views.test_email,name="test_email"),
     path('test-socket',views.test_socket,name="test_socket"),
+    path('internet-test',views.internet_test,name="internet_test")
 ]

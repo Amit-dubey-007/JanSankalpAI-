@@ -33,6 +33,16 @@ def test_email(request):
 from django.http import HttpResponse
 import socket
 
+from django.http import HttpResponse
+import requests
+
+def internet_test(request):
+    try:
+        r = requests.get("https://www.google.com", timeout=10)
+        return HttpResponse(f"OK {r.status_code}")
+    except Exception as e:
+        return HttpResponse(str(e))
+
 def test_socket(request):
     try:
         socket.create_connection(("smtp-relay.brevo.com", 587), timeout=10)
