@@ -27,4 +27,5 @@ urlpatterns=[
     path("guidelines",views.guidelines,name="guidelines"),
     path("contact",views.contact,name="contact"),
     path('about',views.about,name="about"),
+    path('endpoint',views.endpoint,name='endpoint'),
 ]

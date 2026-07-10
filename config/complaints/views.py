@@ -16,6 +16,9 @@ from accounts.models import Profile
 import cloudinary.uploader
 # Create your views here.
 
+def endpoint(request):
+    return JsonResponse({"status":"success"})
+
 @login_required
 def create_complaint(request):
 
